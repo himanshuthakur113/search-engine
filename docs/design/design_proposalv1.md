@@ -118,11 +118,11 @@ Where,
 
 ### Crawler Flow Diagram
 
-![Crawler Flow Diagram](/Crawler_flow.jpeg)
+![Crawler Flow Diagram](/Project_2/Crawler_HT/docs/design/memory_diagram/Crawler_flow.jpeg)
 
 ### Crawler Memory Diagram
 
-![Crawler Memory Diagram](/Crawler_memdiagram.jpeg)
+![Crawler Memory Diagram](/Project_2/Crawler_HT/docs/design/memory_diagram/Crawler_memdiagram.jpeg)
 
 ---
 # Section 4 — Design Decisions

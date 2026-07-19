@@ -1,0 +1,8 @@
+Okay first i completed the design proposal for the webcrawler i haven't added much about the fetcher part but i have built a basic layout for the project
+
+I have started building the project the first thing i have created a basic layout for the project structure right now i simple have a include folder and a src folder.
+
+I have written the header for WebCrawler which is going to be the blueprint for the WebCrawler object 
+for frontier as in design proposal i have decided to build a frontier class which is just going to wrapper around a linkedlist object and act as queue with fifo but in acutal implementaion in my datastructure library i have created a different data structure queue which is just a wrapper around the linkedlist object with linkedlist obj being private and have function like push,pop,size,empty public 
+while making queue i learn about the rule of zero means that i do not have to create destructor,copyconstructor,(=)operator overload for class if its member manage their own resources,compiler will generate these special member function
+
