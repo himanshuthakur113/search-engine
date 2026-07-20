@@ -60,3 +60,14 @@ http:
 javascript:void(0)
 
 Now there is need to normalize thse url for which I am going to create a different normalize function
+
+---------
+Before making the normalizer I try to run the whole web crawler.I write a simple implementation in the crawl function and save the html in the page but there are come some issue to fix since queue implementation is generic I haven't added the #include "queue.tpp" at the end of queue.h file 
+
+I corrected those mistake then run the process,at execution i encounter a error 
+![alt text](image-7.png)
+It is in the fetcher the fetcher is unable does not return res with CURLE_OK so means not able to fetch the page.
+As per my understanding this is done because the url is not normalize and is not returning anything
+I have written excpetion for this as if the curl_easy_perform fail now I am going to write try/catch block around the fetcher block 
+Okay it is also not writing the pages in the page folder.
+The problem is that the function has created the pages folder inside the build folder 

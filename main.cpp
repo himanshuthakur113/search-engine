@@ -9,11 +9,5 @@ int main()
     string res = fetcher.fetch(url);
     
     WebCrawler crawler;
-    DA<string> urls = crawler.link_extractor(res);
-    for(int i = 0;i < urls.size(); ++i)
-    {
-        cout << urls[i] <<endl;
-    }
-
-    
+    crawler.crawl(url);
 }

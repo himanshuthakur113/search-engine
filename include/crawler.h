@@ -14,7 +14,7 @@ class WebCrawler
     private:
         int maxDepth;
         int maxPages;
-        queue<CrawlTask> Frontier;
+        queue<std::string> Frontier;
         HashMap<std::string,int> visited;
         
 
@@ -23,4 +23,5 @@ class WebCrawler
         WebCrawler();
         void crawl(const std::string& seedURL);
         DA<std::string> link_extractor(const std::string &html);
+        std::string normalize_url(std::string &url);
 };

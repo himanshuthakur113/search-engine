@@ -1,9 +1,13 @@
 #include "crawler.h"
+#include "fetcher.h"
+#include <iostream>
+#include <fstream>
+#include <filesystem>
 
 WebCrawler::WebCrawler()
 {
     maxDepth = 0;
-    maxPages = 0;
+    maxPages = 10;
 }
 
 DA<std::string> WebCrawler::link_extractor(const std::string &html)
@@ -39,6 +43,58 @@ DA<std::string> WebCrawler::link_extractor(const std::string &html)
 }
 
 void WebCrawler::crawl(const std::string& seedURL)
-{
+{   
+    int mp = 0;
+    Fetcher fetcher;
+    Frontier.push(seedURL);
+    visited.insert(seedURL,1);
 
+    std::filesystem::create_directory("pages");
+
+    while(!Frontier.empty())
+    {   
+        if(mp == maxPages)
+        {
+            break;
+        }
+        std::string url = Frontier.pop();
+
+        try{
+        std::string html = fetcher.fetch(url);
+        
+
+        std::ofstream file("pages/page_" + std::to_string(mp) + ".html");
+        if(!file.is_open())
+        {
+            std::cout << "Failed to open file\n";
+        }
+        
+        file << html;
+        std::cout <<"write page" <<std::endl;
+
+        DA<std::string> urls = link_extractor(html);
+
+        for(int i = 0;i < urls.size();++i)
+        {
+            std::string url_ = urls[i];
+            if(visited.contains(url_)){
+                continue;
+            }
+            Frontier.push(url_);
+            visited.insert(url_,1);
+        }
+
+        mp++;
+    }
+    catch(const std::exception &e)
+    {
+        std::cout << "Failed to fetch" <<url <<e.what() <<"\n";
+        continue;
+    }
+    }
+}
+
+std::string WebCrawler::normalize_url(std::string &url)
+{
+    return "hello";
 }
