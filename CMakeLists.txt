@@ -9,11 +9,19 @@ set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
 
 find_package(CURL REQUIRED)
 
-add_executable(main main.cpp src/fetcher.cpp)
+add_subdirectory(
+    ../../Project_1/data_structures-library
+    data_structures_build
+)
+
+add_executable(main main.cpp src/fetcher.cpp src/crawler.cpp)
 
 target_include_directories(main PRIVATE
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/src
 )
 
-target_link_libraries(main PRIVATE CURL::libcurl)
+target_link_libraries(main PRIVATE
+    CURL::libcurl
+    DataStructuresLibrary
+)

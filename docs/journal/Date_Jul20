@@ -1,0 +1,8 @@
+Today, I have started working on extraction logic of url from the html page returned from the fetch function.
+First I created a private function name link_extractor inside the WebCrawler Class,
+I am thinking it should return a array of url extracted from the html file then we process each url individually.
+I have written a temporary url finding logic inside the function it is just a simple hardcode logic inside the loop.
+
+While testing the simple url extractor logic which I defined in the WebCrawler class I need to make its object in the main,
+ while building the main I realizes that my data structures from the main library are not included 
+ 
