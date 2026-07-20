@@ -1,0 +1,19 @@
+cmake_minimum_required(VERSION 3.15)
+
+project(WebCrawler LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
+
+find_package(CURL REQUIRED)
+
+add_executable(main main.cpp src/fetcher.cpp)
+
+target_include_directories(main PRIVATE
+    ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_SOURCE_DIR}/src
+)
+
+target_link_libraries(main PRIVATE CURL::libcurl)
