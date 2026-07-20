@@ -18,3 +18,45 @@ Problem -> The problem is I have declared a ptr inside a if block and and has us
 Solution -> I have decided to create it outside the if block intializing it with nullptr
 
 Finally the link extractor work it give everything after the (<)a href =  until (>) this is not found.
+
+--------
+Now I am continue working on the same url extraction logic,made some changes and now it is not printing anything 
+Okay I have fixed the issue 
+To understand the problem first its important how my code works there is a for loop which traverse until it found < a and ' ' after that it increment i by 3 then another while loop will run which will not stop until it found https now here I face the problem which is I created while loop like this 
+while(html[i] != 'h' && html[i+1] != 't' && html[i+2] != 't' && html[i+3] != 'p' && html[i+4] != 's')
+{   
+    i++;
+}
+It is not right because this loop see just one occurence and if it does not match https it stops
+
+then i replace my while loop like this 
+
+while(html[i] != 'h' || html[i+1] != 't' || html[i+2] != 't' || html[i+3] != 'p' || html[i+4] != 's')
+{   
+              i++;
+}
+
+This loop will run until it found https and then stop after that.It then just copy the URL starting from the html[i] until the html[i] becomes equal to the start position which is intialize in the beginning of loop start = html[i-1]
+
+This is just a example version it has alot of problem like it do only https not http and relative URL
+
+I found a new idea going to find href, after href the loop will skip character until either " , ' are found.
+Doing so I found about that for having ' inside '' I need to do it like '\''
+
+eg -> <a href = "www.htw.com"> then first we look for (<)(a)( ) after that we increment ptr with 3 then if we find href then we increase ptr by 4 then we run while loop unitl we reach " then we start copy the arry from ptr + 1 position unitl we reach another ' or " and we add the copied url into the array.
+At the last of function we return the array of url 
+
+I face another problem it didn't give any result 
+Problem - The problem is that i have written wrong its a typo mistake only I have write != rather than ==
+
+The output is like this ![alt text](image-6.png)
+
+It is not only returning URL it is returning 
+simple # 
+tel:
+mailto:
+https:
+http:
+javascript:void(0)
+
+Now there is need to normalize thse url for which I am going to create a different normalize function
