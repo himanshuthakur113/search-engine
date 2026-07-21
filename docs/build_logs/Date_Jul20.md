@@ -1,73 +1,219 @@
-Today, I have started working on extraction logic of url from the html page returned from the fetch function.
-First I created a private function name link_extractor inside the WebCrawler Class,
-I am thinking it should return a array of url extracted from the html file then we process each url individually.
-I have written a temporary url finding logic inside the function it is just a simple hardcode logic inside the loop.
+# Build Log
 
-While testing the simple url extractor logic which I defined in the WebCrawler class I need to make its object in the main,
- while building the main I realizes that my data structures from the main library are not included 
- ![alt text](image-3.png)
+## Date: 20/07/2026
 
- To solve this I think of adding the ds library as a subdirectory inside the webcrawler I made changes in both CMakeLists.txt of ds library and Crawler.Then I face another issue which is 
- ![alt text](image-4.png)
+### Session - 1
 
- It happens because the compiler tries to find the linked_list.tpp which is used in th hashmap inside the include folder which is inside the src folder.This is issue is fixed by making some changes in the CMake of the ds-library adding src as an include directory to interface library.
+### Work Completed
+- Started working on the URL extraction logic from the HTML page returned by the `fetch()` function.
+- Created a private function `link_extractor()` inside the `WebCrawler` class.
+- Decided that the function will return a `DynamicArray` of URLs extracted from the HTML page.
+- Wrote a temporary URL extraction logic using a simple hardcoded approach.
+- Successfully extracted everything after `<a href=` until the closing `>` as an initial implementation.
 
-After this I encounter another bug which is ![alt text](image-5.png)
-It is error in my Dynamic array shrink function I have used a ptr but haven't declared it
-Problem -> The problem is I have declared a ptr inside a if block and and has used it outside the block 
-Solution -> I have decided to create it outside the if block intializing it with nullptr
+### Problems Faced
+While testing the `link_extractor()` function, I created a `WebCrawler` object in `main.cpp`. During compilation I realized that my data structure library was not included in the project.
 
-Finally the link extractor work it give everything after the (<)a href =  until (>) this is not found.
+![alt text](image-3.png)
 
---------
-Now I am continue working on the same url extraction logic,made some changes and now it is not printing anything 
-Okay I have fixed the issue 
-To understand the problem first its important how my code works there is a for loop which traverse until it found < a and ' ' after that it increment i by 3 then another while loop will run which will not stop until it found https now here I face the problem which is I created while loop like this 
-while(html[i] != 'h' && html[i+1] != 't' && html[i+2] != 't' && html[i+3] != 'p' && html[i+4] != 's')
-{   
+### Solution
+I decided to add my **Data Structure Library** as a subdirectory inside the WebCrawler project. I made the required changes in both `CMakeLists.txt` files.
+
+After that I encountered another issue.
+
+![alt text](image-4.png)
+
+The compiler was unable to find `linked_list.tpp` which is included by the `HashMap` implementation. The problem was that the `src` directory of the data structure library was not added as an include directory for the interface library.
+
+I fixed the issue by modifying the `CMakeLists.txt` of the Data Structure Library and adding the `src` directory as an include directory.
+
+---
+
+## Date: 21/07/2026
+
+### Session - 2
+
+### Work Completed
+- Continued testing the URL extraction logic.
+- Fixed a bug in the Data Structure Library.
+- Successfully made the temporary URL extraction logic work.
+
+### Problems Faced
+During compilation I encountered another error.
+
+![alt text](image-5.png)
+
+The error was inside the `DynamicArray` shrink function.
+
+### Solution
+The problem was that I declared a pointer inside an `if` block but later used it outside the block.
+
+I moved the declaration outside the `if` block and initialized it with `nullptr`.
+
+After fixing the issue, the temporary URL extraction logic started working.
+
+---
+
+## Date: 21/07/2026
+
+### Session - 3
+
+### Work Completed
+- Continued improving the URL extraction logic.
+- Changed the extraction approach to search for `href` instead of directly searching for `"https"`.
+- Learned how to use escaped single quotes (`'\''`) in character literals.
+- Implemented a cleaner URL extraction algorithm.
+
+### Problems Faced
+After modifying the extraction logic, nothing was being printed.
+
+### Solution
+To understand the issue, I analyzed the logic.
+
+The program first searches for:
+
+```html
+<a 
+```
+
+After finding it, the pointer is incremented by three characters. Then another loop searches for `"https"`.
+
+Initially I wrote the loop like this:
+
+```cpp
+while(html[i] != 'h' && html[i+1] != 't' &&
+      html[i+2] != 't' && html[i+3] != 'p' &&
+      html[i+4] != 's')
+{
     i++;
 }
-It is not right because this loop see just one occurence and if it does not match https it stops
+```
 
-then i replace my while loop like this 
+This was incorrect because the loop stopped as soon as any one of the comparisons became false.
 
-while(html[i] != 'h' || html[i+1] != 't' || html[i+2] != 't' || html[i+3] != 'p' || html[i+4] != 's')
-{   
-              i++;
+I replaced it with:
+
+```cpp
+while(html[i] != 'h' || html[i+1] != 't' ||
+      html[i+2] != 't' || html[i+3] != 'p' ||
+      html[i+4] != 's')
+{
+    i++;
 }
+```
 
-This loop will run until it found https and then stop after that.It then just copy the URL starting from the html[i] until the html[i] becomes equal to the start position which is intialize in the beginning of loop start = html[i-1]
+Now the loop continues until the sequence `"https"` is found.
 
-This is just a example version it has alot of problem like it do only https not http and relative URL
+Later I realized there was an even better approach.
 
-I found a new idea going to find href, after href the loop will skip character until either " , ' are found.
-Doing so I found about that for having ' inside '' I need to do it like '\''
+Instead of searching for `"https"`, I decided to search for `"href"`.
 
-eg -> <a href = "www.htw.com"> then first we look for (<)(a)( ) after that we increment ptr with 3 then if we find href then we increase ptr by 4 then we run while loop unitl we reach " then we start copy the arry from ptr + 1 position unitl we reach another ' or " and we add the copied url into the array.
-At the last of function we return the array of url 
+The new logic works as follows:
 
-I face another problem it didn't give any result 
-Problem - The problem is that i have written wrong its a typo mistake only I have write != rather than ==
+- Find `<a `
+- Move the pointer after `<a `
+- Search for `href`
+- Skip characters until either `"` or `'` is found
+- Store that character as the starting delimiter
+- Copy every character until the same delimiter is found again
+- Store the extracted URL inside the array
+- Return the array at the end of the function
 
-The output is like this ![alt text](image-6.png)
+While implementing this, I also learned that to represent a single quote character in C++ I need to write it as:
 
-It is not only returning URL it is returning 
-simple # 
-tel:
-mailto:
-https:
-http:
-javascript:void(0)
+```cpp
+'\''
+```
 
-Now there is need to normalize thse url for which I am going to create a different normalize function
+---
 
----------
-Before making the normalizer I try to run the whole web crawler.I write a simple implementation in the crawl function and save the html in the page but there are come some issue to fix since queue implementation is generic I haven't added the #include "queue.tpp" at the end of queue.h file 
+### Problems Faced
+After implementing the new logic, it still returned no output.
 
-I corrected those mistake then run the process,at execution i encounter a error 
+### Solution
+The problem was simply a typo. I accidentally wrote `!=` instead of `==`.
+
+After correcting the condition, the function started returning URLs.
+
+The output looked like this:
+
+![alt text](image-6.png)
+
+The extractor was returning not only normal URLs but also values like:
+
+- `#`
+- `tel:`
+- `mailto:`
+- `https:`
+- `http:`
+- `javascript:void(0)`
+
+The next step is to normalize these URLs before adding them to the crawler.
+
+---
+
+## Date: 21/07/2026
+
+### Session - 4
+
+### Work Completed
+- Started integrating the crawler with the fetcher.
+- Implemented a basic version of the `crawl()` function.
+- Started saving the downloaded HTML pages into files.
+
+### Problems Faced
+The project failed to build because my generic `Queue` implementation was missing:
+
+```cpp
+#include "queue.tpp"
+```
+
+at the end of `queue.h`.
+
+### Solution
+I added the missing include statement and rebuilt the project successfully.
+
+During execution another error occurred.
+
 ![alt text](image-7.png)
-It is in the fetcher the fetcher is unable does not return res with CURLE_OK so means not able to fetch the page.
-As per my understanding this is done because the url is not normalize and is not returning anything
-I have written excpetion for this as if the curl_easy_perform fail now I am going to write try/catch block around the fetcher block 
-Okay it is also not writing the pages in the page folder.
-The problem is that the function has created the pages folder inside the build folder 
+
+The `Fetcher` was throwing an exception because `curl_easy_perform()` was not returning `CURLE_OK`.
+
+Based on my understanding, the extracted URLs were not yet normalized, causing invalid URLs to be passed to the fetcher.
+
+I had already implemented exception handling inside the `Fetcher`, so my next step is to add a `try`/`catch` block around the fetch operation inside the crawler.
+
+I also noticed that the downloaded pages were not appearing where I expected.
+
+The reason was that the program created the `pages` folder inside the **build** directory because the executable runs from there.
+
+---
+
+## Date: 21/07/2026
+
+### Session - 5
+
+### Work Completed
+- Started designing the URL normalization component.
+- Decided to first split a URL into its individual components.
+- Implemented logic to extract:
+  - Scheme
+  - Host
+  - Port
+  - Path
+  - Query
+  - Fragment
+
+### Design Decision
+While working on the normalization logic, I realized that it would become fairly complex.
+
+Instead of keeping everything inside `WebCrawler`, I decided to create a separate file named `url_handler`.
+
+Inside it I created a `URL` class responsible for:
+
+- Breaking a URL into its components.
+- Resolving relative URLs into absolute URLs.
+- Ignoring URLs that are not valid web pages.
+- Normalizing URLs.
+
+The logic that parses a URL into its individual components has been moved into the constructor of the `URL` class, and these components are stored as private data members.

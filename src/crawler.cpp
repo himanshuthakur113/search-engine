@@ -63,12 +63,12 @@ void WebCrawler::crawl(const std::string& seedURL)
         std::string html = fetcher.fetch(url);
         
 
-        std::ofstream file("pages/page_" + std::to_string(mp) + ".html");
+        std::ofstream file("../pages/page_" + std::to_string(mp) + ".html");
         if(!file.is_open())
         {
             std::cout << "Failed to open file\n";
         }
-        
+
         file << html;
         std::cout <<"write page" <<std::endl;
 
@@ -94,7 +94,8 @@ void WebCrawler::crawl(const std::string& seedURL)
     }
 }
 
-std::string WebCrawler::normalize_url(std::string &url)
+std::string WebCrawler::normalize_url(std::string &url,std::string &baseURL)
 {
-    return "hello";
+  return "i am do da do da do da o la la la do da";
+
 }

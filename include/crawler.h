@@ -23,5 +23,5 @@ class WebCrawler
         WebCrawler();
         void crawl(const std::string& seedURL);
         DA<std::string> link_extractor(const std::string &html);
-        std::string normalize_url(std::string &url);
+        std::string normalize_url(std::string &url,std::string &baseURL);
 };
