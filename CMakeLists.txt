@@ -14,7 +14,7 @@ add_subdirectory(
     data_structures_build
 )
 
-add_executable(main main.cpp src/fetcher.cpp src/crawler.cpp)
+add_executable(main main.cpp src/fetcher.cpp src/crawler.cpp src/url_handler.cpp)
 
 target_include_directories(main PRIVATE
     ${CMAKE_SOURCE_DIR}/include

@@ -2,6 +2,7 @@
 #include "hash_map.h"
 #include "queue.h"
 #include "dynamic_array.h"
+#include "url_handler.h"
 
 struct CrawlTask
 {
@@ -16,9 +17,7 @@ class WebCrawler
         int maxPages;
         queue<std::string> Frontier;
         HashMap<std::string,int> visited;
-        
-
-
+       
     public:
         WebCrawler();
         void crawl(const std::string& seedURL);

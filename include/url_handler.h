@@ -1,3 +1,6 @@
+#ifndef URL_H
+#define URL_H
+
 #include <string>
 
 class URL
@@ -12,8 +15,11 @@ class URL
 
     public:
 
-    URL(const std::string& url);
-    std::string resolve_url(const std::string baseUrl);
-    std::string normalize_url(const std::string url);
+    URL(const std::string& baseURL);
+    std::string resolve_url(const std::string &url);
+    std::string normalize_url(const std::string &url);
+    void split_url(const std::string& url);
 
 };
+
+#endif

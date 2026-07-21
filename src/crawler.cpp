@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <filesystem>
+#include "url_handler.h"
 
 WebCrawler::WebCrawler()
 {
@@ -58,12 +59,13 @@ void WebCrawler::crawl(const std::string& seedURL)
             break;
         }
         std::string url = Frontier.pop();
+        URL handle_url(url);
 
         try{
         std::string html = fetcher.fetch(url);
         
 
-        std::ofstream file("../pages/page_" + std::to_string(mp) + ".html");
+        std::ofstream file("../pages/page_" + std::to_string(mp) + ".txt");
         if(!file.is_open())
         {
             std::cout << "Failed to open file\n";
@@ -73,10 +75,11 @@ void WebCrawler::crawl(const std::string& seedURL)
         std::cout <<"write page" <<std::endl;
 
         DA<std::string> urls = link_extractor(html);
-
+       
         for(int i = 0;i < urls.size();++i)
         {
-            std::string url_ = urls[i];
+            std::string url_ = handle_url.resolve_url(urls[i]);
+        
             if(visited.contains(url_)){
                 continue;
             }
