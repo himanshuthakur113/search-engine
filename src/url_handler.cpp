@@ -8,6 +8,13 @@ URL::URL(const std::string& baseURL)
 
 void URL::split_url(const std::string& url)
 {
+    scheme.clear();
+    host.clear();
+    port.clear();
+    path.clear();
+    query.clear();
+    fragment.clear();
+    
     int i = 0;
 
     //for scheme

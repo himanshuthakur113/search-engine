@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <filesystem>
+#include <cctype>
 #include "url_handler.h"
 
 WebCrawler::WebCrawler()
@@ -19,39 +20,85 @@ WebCrawler::WebCrawler(int _maxDepth,int _maxPages)
 
 DA<std::string> WebCrawler::link_extractor(const std::string &html)
 {
-
     DA<std::string> urls;
+    int len = html.size();
+    int i = 0;
 
-    for(int i = 0;i+6 < html.size();++i)
+    while (i < len)
     {
-        if(html[i] == '<' && html[i+1] == 'a' && html[i+2] == ' ')
-        {   
-            i += 3;
-            if(html[i] == 'h' && html[i+1] == 'r' && html[i+2] == 'e' && html[i+3] == 'f')
-            {   
-                i += 4;
-                while(html[i] != '"' && html[i] != '\'')
+        if (html[i] == '<' && (i+1 < len) && (html[i+1] == 'a' || html[i+1] == 'A'))
+        {
+            if (i+2 < len && (html[i+2] == ' ' || html[i+2] == '>'))
+            {
+                i += 2;
+                while (i < len && html[i] != '>')
                 {
-                    i++;
+                    while (i < len && html[i] == ' ')
+                    {
+                        i++;
+                    }
+                    if (i >= len || html[i] == '>') break;
+
+                    if (i + 4 <= len &&
+                        std::tolower(html[i]) == 'h' &&
+                        std::tolower(html[i+1]) == 'r' &&
+                        std::tolower(html[i+2]) == 'e' &&
+                        std::tolower(html[i+3]) == 'f')
+                    {
+                        i += 4;
+                        while (i < len && html[i] == ' ') i++;
+                        if (i < len && html[i] == '=')
+                        {
+                            i++;
+                            while (i < len && html[i] == ' ') i++;
+
+                            std::string url;
+                            if (i < len && (html[i] == '"' || html[i] == '\''))
+                            {
+                                char quote = html[i];
+                                i++;
+                                int start = i;
+                                while (i < len && html[i] != quote && html[i] != '>')
+                                {
+                                    i++;
+                                }
+                                url = html.substr(start, i - start);
+                                if (i < len && html[i] == quote) i++;
+                            }
+                            else
+                            {
+                                int start = i;
+                                while (i < len && html[i] != ' ' && html[i] != '>')
+                                {
+                                    i++;
+                                }
+                                url = html.substr(start, i - start);
+                            }
+
+                            if (!url.empty())
+                            {
+                                urls.append(url);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        while (i < len && html[i] != ' ' && html[i] != '>')
+                        {
+                            i++;
+                        }
+                    }
                 }
-                char start = html[i];
-                i++;
-                std::string url;
-                while(html[i] != start)
-                {
-                    url += html[i];
-                    i++;
-                }
-                urls.append(url);   
             }
         }
+        i++;
     }
     return urls;
 }
 
 void WebCrawler::crawl(const CrawlTask& seedTask)
 {   
-    int pages_crawled = 0;
+
     Fetcher fetcher;
     frontier.push(seedTask);
     visited.markVisited(seedTask.url);
