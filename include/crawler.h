@@ -3,6 +3,7 @@
 #include "queue.h"
 #include "dynamic_array.h"
 #include "url_handler.h"
+#include "page_store.h"
 
 struct CrawlTask
 {
@@ -19,6 +20,7 @@ class WebCrawler
         int maxPages;
         queue<CrawlTask> Frontier;
         HashMap<std::string,int> visited;
+        PageStore pagestore;
        
     public:
         WebCrawler();

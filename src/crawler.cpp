@@ -58,7 +58,7 @@ void WebCrawler::crawl(const CrawlTask& seedTask)
 
     while(!Frontier.empty())
     {   
-        if(pages_crawled >= maxPages)
+        if(pagestore.pages_saved() >= maxPages)
         {
             break;
         }
@@ -68,14 +68,7 @@ void WebCrawler::crawl(const CrawlTask& seedTask)
         try{
             std::string html = fetcher.fetch(task.url);
           
-            std::ofstream file("../pages/page_" + std::to_string(pages_crawled) + ".txt");
-            if(!file.is_open())
-            {
-                std::cout << "Failed to open file\n";
-            }
-
-            file << html;
-            pages_crawled++;
+            pagestore.save(html);
             std::cout <<"write page" <<std::endl;
 
 
