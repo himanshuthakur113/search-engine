@@ -22,3 +22,9 @@ USERAGENT pass a name to the server not libcurl.x.x.x some browser might block l
 
 The problem acutally is that the in the fetcher the perform function is returning curl_ok even if the return html is empty string but now it would not return curle_ok if it didn't write the string.
 
+Now I start working on the extractlink problem it didn't correctly handle url like <a      href = " > or like <A HREF> so i added case for that also url which does not have quotes before like <a href = www.ze.com > or malformed <a href = "avc.com >
+
+I rewrite the whole loop to handle all these cases 
+
+Now There also one more bug which it that in my resolve function I didn't return the port part.
+So need to add that 

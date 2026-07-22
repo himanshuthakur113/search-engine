@@ -14,7 +14,7 @@ void URL::split_url(const std::string& url)
     path.clear();
     query.clear();
     fragment.clear();
-    
+
     int i = 0;
 
     //for scheme
@@ -109,6 +109,12 @@ std::string URL::resolve_url(const std::string &url)
         }
     }
 
+    std::string host_port = host;
+    if(!port.empty())
+    {
+        host_port += ":" + port;
+    }
+
     //if the url is not absolute and are like //abc.example these are protocol relative
     //add with schme like https + '//:' and the url
     if(url.size() > 2 && url[0] == '/' && url[1] == '/')
@@ -120,10 +126,11 @@ std::string URL::resolve_url(const std::string &url)
     //add them as path after the host
     if(url.size() > 1 && url[0] == '/' && url[1] != '/')
     {
-        return scheme + "://" + host + url;
+        return scheme + "://" + host_port + url;
     }
 
     //now this is for cases like url just as "contact" or "..contact" these are just relative
+    //this does not remove ../
     //must be placed after the current path of baseurl
     std::string basepath = path;
     if(basepath.empty())
@@ -145,7 +152,7 @@ std::string URL::resolve_url(const std::string &url)
         toadd_bef_ru += basepath[i];
     }
 
-    return  scheme +"://" + host + toadd_bef_ru + url;
+    return  scheme +"://" + host_port + toadd_bef_ru + url;
 }
 
 std::string URL::normalize_url(const std::string &url)
@@ -198,7 +205,24 @@ std::string URL::normalize_url(const std::string &url)
                 path_part = "";
             }   
         }
-        path_part += dotdotpath[i];
+        else
+        {
+            path_part += dotdotpath[i];
+        }
+    }
+
+    if(path_part == "..")
+    {
+        if(top >= 0)
+        {
+            top--;
+        }
+    }
+    else if(path_part != "." && path_part != "")
+    {
+        top++;
+        path_parts[top] = path_part;
+        path_part = "";
     }
 
     std::string combined_path;
