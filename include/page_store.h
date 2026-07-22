@@ -1,3 +1,5 @@
+#ifndef PAGE_H
+#define PAGE_H
 #include <string>
 
 class PageStore
@@ -12,3 +14,5 @@ class PageStore
         int pages_saved() const;
 
 };
+
+#endif

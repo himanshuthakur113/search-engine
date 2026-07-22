@@ -1,40 +1,141 @@
-I start by resuming the url_handler instead of spliting the string into different component in the constructor I write a differnet function name split_url which spilit the url into different components.Then I will call this function inside the constructor.
-I have implemented the resolver function this function will take two arguments one is base url and the second is the url which is going to be resolved.I have added 4 different cases 
-if the url is absolute then return it 
-if the url is protocol relative then modify and return it 
-if the url is root relative then add it after the url and return it
-if the url is relative like simple "contact" ..contact
-then add it after url base then return it
+# Build Log
 
-Now I am adding this to crawl function of WebCrawler, there is something here which I notice right now that is I have to initialize the URL object in the beginning when I pop the URL from frontier and pass it the the url but that is going to be base URL and it is a good thing at this have the base URL components it will easy for comparision in the resolver function.
-I have make the changes and going to add the resolve_url to the crawl function and running it works fine.
+## Date: 21/07/2026
 
-Writing the url normalizer function in this I have created a temp object of url class which is going to be have component of the url extracted form the page
+### Session - 1
 
-then I normalize the url given by resolver function 
-I fix the path in path if empty there always /
-covert to lower case the scheme and the host
-remove fragment
-handle ../ these paths
-handle port  ->remove default port
+### Work Completed
+- Resumed working on the `url_handler` module.
+- Refactored the URL parsing logic by moving it into a separate `split_url()` function instead of performing all parsing inside the constructor.
+- Modified the constructor so that it simply calls `split_url()`, making the class cleaner and separating object initialization from parsing logic.
 
+- Implemented the `resolve_url()` function.
+- The function accepts:
+  - Base URL
+  - URL to be resolved
 
-after that I integreated it in the crawl function and run it I faces this error
-![alt text](image-8.png)
-In this error the important par tis operator[](size_type) it is from basic_string.h
-and error is _pos <= size() failed
+- Added support for four different cases:
+  - **Absolute URL** → Return it directly.
+  - **Protocol-relative URL** (`//example.com`) → Add the protocol from the base URL.
+  - **Root-relative URL** (`/contact`) → Append it after the host of the base URL.
+  - **Relative URL** (`contact`, `../contact`) → Resolve it relative to the base path.
 
-It means I am accessing a character outside the bounds of std::string
+- Started integrating the resolver into the `crawl()` function.
 
-Okay it is inside my link extractor function in link extractor I have changed something one condition in the loop which is the loop will run upto html.size() - 7 which is wrong
-NO it is not the issue loop will not crash I am not accessing element above the html.size()-1
+### Design Decision
+While integrating the resolver, I noticed that whenever a URL is popped from the frontier, I should immediately create a `URL` object from it.
 
-The issue can be in split_url part where I try to access url[i] for getting schemes but it is not the issue as I face the similar error again 
+This object naturally becomes the **base URL** for every link extracted from that page. Since all of its components are already parsed, comparing the host, scheme, and path inside the resolver becomes much simpler.
 
-Now I decided to debugging I run the main using gdb and this is the line where the actual error occur
+After making these changes, I integrated `resolve_url()` into the crawler and verified that it was working correctly.
 
-![errorx](image-9.png)
+---
 
-The error is caused when the html.size() = 0 and I try to run the loop until html.size() - 6.html.size() will return a size_t which can'nt be negative so it becomes the biggest int causing segmentation fault
-I fix this by converting it to i + 6 <   html.size()
+## Date: 21/07/2026
 
+### Session - 2
+
+### Work Completed
+- Started implementing the URL normalization logic.
+- Created a temporary `URL` object from the URL returned by the resolver.
+- Added normalization steps:
+  - Ensure the path is never empty (default to `/`).
+  - Convert the scheme to lowercase.
+  - Convert the host to lowercase.
+  - Remove URL fragments (`#fragment`).
+  - Resolve `.` and `..` path components.
+  - Remove default ports (`80` for HTTP and `443` for HTTPS).
+
+- Integrated the URL normalizer into the `crawl()` function.
+
+### Problems Faced
+After integrating the normalizer, the crawler started crashing.
+
+The important part of the error was:
+
+```
+operator[](size_type)
+```
+
+from `basic_string.h`, along with
+
+```
+_pos <= size() failed
+```
+
+This indicated that somewhere I was accessing a character outside the bounds of a `std::string`.
+
+![Runtime Error](image-8.png)
+
+---
+
+### Investigation
+
+My first suspicion was the `link_extractor()` function because I had recently modified one of the loop conditions.
+
+Initially, I thought this loop was the problem:
+
+```cpp
+for (int i = 0; i < html.size() - 7; ++i)
+```
+
+However, after checking the logic carefully, I realized that this alone should not access memory beyond `html.size() - 1`, so it was probably not the actual cause.
+
+Next, I suspected the `split_url()` function where I access `url[i]` while parsing the scheme.
+
+After testing it, I encountered the same error again, confirming that the issue was somewhere else.
+
+At this point, I decided to debug the program using **GDB**.
+
+The debugger pointed me to the exact line where the crash occurred.
+
+![GDB Debugging](image-9.png)
+
+---
+
+### Solution
+
+After inspecting the variables, I found that the crash happened whenever:
+
+```cpp
+html.size() == 0
+```
+
+The loop condition was:
+
+```cpp
+for (int i = 0; i < html.size() - 6; ++i)
+```
+
+The problem is that `html.size()` returns a `size_t` (an unsigned integer).
+
+When the HTML string is empty, `html.size() - 6` does **not** become `-6`; instead, it underflows and becomes a very large positive number.
+
+As a result, the loop executes even though the string is empty, eventually causing an out-of-bounds access.
+
+I fixed the issue by replacing the loop condition with:
+
+```cpp
+for (size_t i = 0; i + 6 < html.size(); ++i)
+```
+
+This avoids unsigned integer underflow and guarantees that there are enough characters remaining before accessing `html[i + 6]`.
+
+After making this change, the crawler executed successfully without crashing.
+
+### Key Learning
+This debugging session reminded me to be careful when working with `size_t`. Expressions like:
+
+```cpp
+html.size() - N
+```
+
+can easily underflow when the string is shorter than `N`.
+
+A much safer approach is:
+
+```cpp
+i + N < html.size()
+```
+
+which prevents unsigned underflow and avoids out-of-bounds accesses.

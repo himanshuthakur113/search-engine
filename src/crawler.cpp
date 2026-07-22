@@ -53,17 +53,17 @@ void WebCrawler::crawl(const CrawlTask& seedTask)
 {   
     int pages_crawled = 0;
     Fetcher fetcher;
-    Frontier.push(seedTask);
-    visited.insert(seedTask.url,1);
+    frontier.push(seedTask);
+    visited.markVisited(seedTask.url);
 
-    while(!Frontier.empty())
+    while(!frontier.empty())
     {   
         if(pagestore.pages_saved() >= maxPages)
         {
             break;
         }
 
-        CrawlTask task = Frontier.pop();
+        CrawlTask task = frontier.pop();
 
         try{
             std::string html = fetcher.fetch(task.url);
@@ -89,8 +89,8 @@ void WebCrawler::crawl(const CrawlTask& seedTask)
                     continue;
                 }
 
-                Frontier.push(CrawlTask(resolved_url, task.depth + 1));
-                visited.insert(resolved_url,1);
+                frontier.push(CrawlTask(resolved_url, task.depth + 1));
+                visited.markVisited(resolved_url);
             }
 
         
