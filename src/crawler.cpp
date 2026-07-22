@@ -8,7 +8,13 @@
 WebCrawler::WebCrawler()
 {
     maxDepth = 0;
-    maxPages = 10;
+    maxPages = 0;
+}
+
+WebCrawler::WebCrawler(int _maxDepth,int _maxPages)
+{
+    maxDepth = _maxDepth;
+    maxPages = _maxPages;
 }
 
 DA<std::string> WebCrawler::link_extractor(const std::string &html)
@@ -16,7 +22,7 @@ DA<std::string> WebCrawler::link_extractor(const std::string &html)
 
     DA<std::string> urls;
 
-    for(int i = 0;i < html.size()-6;++i)
+    for(int i = 0;i+6 < html.size();++i)
     {
         if(html[i] == '<' && html[i+1] == 'a' && html[i+2] == ' ')
         {   
@@ -43,62 +49,63 @@ DA<std::string> WebCrawler::link_extractor(const std::string &html)
     return urls;
 }
 
-void WebCrawler::crawl(const std::string& seedURL)
+void WebCrawler::crawl(const CrawlTask& seedTask)
 {   
-    int mp = 0;
+    int pages_crawled = 0;
     Fetcher fetcher;
-    Frontier.push(seedURL);
-    visited.insert(seedURL,1);
-
-    std::filesystem::create_directory("pages");
+    Frontier.push(seedTask);
+    visited.insert(seedTask.url,1);
 
     while(!Frontier.empty())
     {   
-        if(mp == maxPages)
+        if(pages_crawled >= maxPages)
         {
             break;
         }
-        std::string url = Frontier.pop();
-        URL handle_url(url);
+
+        CrawlTask task = Frontier.pop();
 
         try{
-        std::string html = fetcher.fetch(url);
-        
+            std::string html = fetcher.fetch(task.url);
+          
+            std::ofstream file("../pages/page_" + std::to_string(pages_crawled) + ".txt");
+            if(!file.is_open())
+            {
+                std::cout << "Failed to open file\n";
+            }
 
-        std::ofstream file("../pages/page_" + std::to_string(mp) + ".txt");
-        if(!file.is_open())
-        {
-            std::cout << "Failed to open file\n";
-        }
+            file << html;
+            pages_crawled++;
+            std::cout <<"write page" <<std::endl;
 
-        file << html;
-        std::cout <<"write page" <<std::endl;
 
-        DA<std::string> urls = link_extractor(html);
-       
-        for(int i = 0;i < urls.size();++i)
-        {
-            std::string url_ = handle_url.resolve_url(urls[i]);
-        
-            if(visited.contains(url_)){
+            if(task.depth >= maxDepth)
+            {
                 continue;
             }
-            Frontier.push(url_);
-            visited.insert(url_,1);
+
+            URL handle_url(task.url);
+            DA<std::string> links = link_extractor(html);
+       
+            for(int i = 0;i < links.size();++i)
+            {
+                std::string resolved_url = handle_url.resolve_url(links[i]);
+                resolved_url = handle_url.normalize_url(resolved_url);
+
+                if(visited.contains(resolved_url)){
+                    continue;
+                }
+
+                Frontier.push(CrawlTask(resolved_url, task.depth + 1));
+                visited.insert(resolved_url,1);
+            }
+
+        
         }
-
-        mp++;
-    }
-    catch(const std::exception &e)
-    {
-        std::cout << "Failed to fetch" <<url <<e.what() <<"\n";
+        catch(const std::exception &e)
+        {
+        std::cout << "Failed to fetch" <<task.url <<e.what() <<"\n";
         continue;
+        }
     }
-    }
-}
-
-std::string WebCrawler::normalize_url(std::string &url,std::string &baseURL)
-{
-  return "i am do da do da do da o la la la do da";
-
 }

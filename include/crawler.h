@@ -8,6 +8,8 @@ struct CrawlTask
 {
     std::string url;
     int depth;
+
+    CrawlTask(std::string _url,int _depth) : url(_url), depth(_depth) {}
 };
 
 class WebCrawler
@@ -15,12 +17,12 @@ class WebCrawler
     private:
         int maxDepth;
         int maxPages;
-        queue<std::string> Frontier;
+        queue<CrawlTask> Frontier;
         HashMap<std::string,int> visited;
        
     public:
         WebCrawler();
-        void crawl(const std::string& seedURL);
+        WebCrawler(int _maxDepth,int _maxPages);
+        void crawl(const CrawlTask& seedTask);
         DA<std::string> link_extractor(const std::string &html);
-        std::string normalize_url(std::string &url,std::string &baseURL);
 };

@@ -1,4 +1,5 @@
 #include "url_handler.h"
+#include "dynamic_array.h"
 
 URL::URL(const std::string& baseURL)
 {
@@ -10,7 +11,7 @@ void URL::split_url(const std::string& url)
     int i = 0;
 
     //for scheme
-    while(i < url.size() - 2)
+    while(i + 2 < url.size())
     {
         if(url[i] == ':' && url[i+1] == '/' && url[i+2] == '/')
         {
@@ -51,7 +52,7 @@ void URL::split_url(const std::string& url)
     //for path
     if(i < url.size() && url[i] == '/')
     {
-        //here i haven't been incremented because path need to capture the / 
+        //here i haven't been incremented because path need to capture the first / 
         while(i < url.size())
         {
             if(url[i] == '?' ||url[i] == '#')
@@ -137,5 +138,84 @@ std::string URL::resolve_url(const std::string &url)
         toadd_bef_ru += basepath[i];
     }
 
-    return scheme +"://" + host + toadd_bef_ru + url;
+    return  scheme +"://" + host + toadd_bef_ru + url;
+}
+
+std::string URL::normalize_url(const std::string &url)
+{
+    URL temp(url);
+
+    //if the created url didn't have path add /
+    if(temp.path.empty())
+    {
+        temp.path = '/';
+    }
+
+    for(int i = 0;i < temp.scheme.size(); ++i)
+    {
+        temp.scheme[i] = tolower(temp.scheme[i]);
+    }
+
+    for(int i = 0;i < temp.host.size(); ++i)
+    {
+        temp.host[i] = tolower(temp.host[i]);
+    }
+
+    if((temp.port == "80"&& temp.scheme == "http")||(temp.port == "443"&& temp.scheme == "https"))
+    {
+        temp.port = "";
+    }
+
+    temp.fragment = "";
+
+    //this is for .. and . segments 
+    std::string dotdotpath = temp.path;
+    std::string path_part;
+    std::string path_parts[100];
+    int top = -1;
+    for(int i = 0;i < dotdotpath.size(); ++i)
+    {
+        if(dotdotpath[i] == '/')
+        {
+            if(path_part == ".."){
+                if(top >= 0) top--;
+            }
+            else if(path_part != "." && path_part != "")
+            {   
+                top += 1;
+                path_parts[top] = path_part;
+                path_part = "";
+            }
+            else
+            {
+                path_part = "";
+            }   
+        }
+        path_part += dotdotpath[i];
+    }
+
+    std::string combined_path;
+    for(int i = 0;i <= top; ++i)
+    {
+        combined_path += "/" + path_parts[i];
+    }
+
+    if(combined_path.empty())
+    {
+        combined_path = "/";
+    }
+
+    temp.path = combined_path;
+
+    if(temp.port != "")
+    {
+        temp.port = ":" + temp.port;
+    }
+
+    if(temp.query != "")
+    {
+        temp.query = "?" + temp.query;
+    }
+
+    return temp.scheme + "://" + temp.host + temp.port + temp.path + temp.query;
 }
