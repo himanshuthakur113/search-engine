@@ -1,40 +1,15 @@
-I start by resuming the url_handler instead of spliting the string into different component in the constructor I write a differnet function name split_url which spilit the url into different components.Then I will call this function inside the constructor.
-I have implemented the resolver function this function will take two arguments one is base url and the second is the url which is going to be resolved.I have added 4 different cases 
-if the url is absolute then return it 
-if the url is protocol relative then modify and return it 
-if the url is root relative then add it after the url and return it
-if the url is relative like simple "contact" ..contact
-then add it after url base then return it
+Today I resumed working on the URL handler. Initially, I was splitting the URL into different components directly inside the constructor, but I decided that this was not a good design. Instead, I created a separate function named split_url() that parses the URL into its different components, and I simply call this function from the constructor. This keeps the constructor cleaner and makes the parsing logic reusable.
 
-Now I am adding this to crawl function of WebCrawler, there is something here which I notice right now that is I have to initialize the URL object in the beginning when I pop the URL from frontier and pass it the the url but that is going to be base URL and it is a good thing at this have the base URL components it will easy for comparision in the resolver function.
-I have make the changes and going to add the resolve_url to the crawl function and running it works fine.
+After that, I implemented the resolve_url() function. This function takes two arguments: the base URL and the extracted URL that needs to be resolved. I handled four different cases. If the extracted URL is already an absolute URL, it is returned as it is. If it is protocol-relative, I add the protocol from the base URL. If it is root-relative, I append it to the website's root. Finally, if it is a normal relative URL such as "contact" or "../contact", I resolve it relative to the base URL and return the resulting absolute URL.
 
-Writing the url normalizer function in this I have created a temp object of url class which is going to be have component of the url extracted form the page
+Once the resolver was completed, I integrated it into the crawl() function. While doing this, I noticed that it would be useful to create a URL object immediately after popping a URL from the frontier. Since this URL becomes the base URL for all links extracted from that page, having its components already parsed makes the comparisons and resolution logic much simpler. After making these changes, I tested the crawler, and the URL resolution worked correctly.
 
-then I normalize the url given by resolver function 
-I fix the path in path if empty there always /
-covert to lower case the scheme and the host
-remove fragment
-handle ../ these paths
-handle port  ->remove default port
+Next, I started implementing the URL normalization function. Inside this function, I created a temporary URL object using the URL returned by the resolver. I then performed several normalization steps, including ensuring that an empty path is replaced with /, converting the scheme and host to lowercase, removing fragments, resolving .. path components, and removing default port numbers.
 
+After integrating the normalizer into the crawler, I encountered a runtime error. The error message pointed to operator[](size_type) inside basic_string.h and reported that _pos <= size() had failed. From this, I understood that somewhere in my code I was trying to access a character outside the bounds of a std::string.
 
-after that I integreated it in the crawl function and run it I faces this error
-![alt text](image-8.png)
-In this error the important par tis operator[](size_type) it is from basic_string.h
-and error is _pos <= size() failed
+My first suspicion was the link_extractor() function because I had recently changed one of its loop conditions to iterate until html.size() - 7. However, after checking the logic carefully, I realized that this was not the actual cause of the problem. I then suspected the split_url() function because it accesses characters using url[i], but after further testing, I found that the same error still occurred elsewhere.
 
-It means I am accessing a character outside the bounds of std::string
+To identify the real problem, I decided to debug the program using gdb. The debugger showed me the exact line where the program crashed. I discovered that the HTML string was sometimes empty, so html.size() was equal to zero. Since html.size() returns an unsigned size_t, calculating html.size() - 6 caused an unsigned underflow, producing a very large positive value instead of a negative number. As a result, the loop condition became true, and the program attempted to access characters beyond the end of the string.
 
-Okay it is inside my link extractor function in link extractor I have changed something one condition in the loop which is the loop will run upto html.size() - 7 which is wrong
-NO it is not the issue loop will not crash I am not accessing element above the html.size()-1
-
-The issue can be in split_url part where I try to access url[i] for getting schemes but it is not the issue as I face the similar error again 
-
-Now I decided to debugging I run the main using gdb and this is the line where the actual error occur
-
-![errorx](image-9.png)
-
-The error is caused when the html.size() = 0 and I try to run the loop until html.size() - 6.html.size() will return a size_t which can'nt be negative so it becomes the biggest int causing segmentation fault
-I fix this by converting it to i + 6 <   html.size()
-
+I fixed this bug by changing the loop condition to i + 6 < html.size(), which correctly checks that there are enough remaining characters before accessing them. After making this change, the runtime error was resolved, and the crawler continued working as expected

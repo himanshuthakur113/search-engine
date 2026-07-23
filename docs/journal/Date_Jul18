@@ -1,35 +1,13 @@
-Okay first i completed the design proposal for the webcrawler i haven't added much about the fetcher part but i have built a basic layout for the project
+Today I completed the design proposal for the WebCrawler project. I have not added much detail about the fetcher yet because I wanted to first understand how it works before finalizing its design. However, I completed the overall architecture and basic layout of the project.
 
-I have started building the project the first thing i have created a basic layout for the project structure right now i simple have a include folder and a src folder.
+After completing the proposal, I started building the project. I first created the basic project structure with separate include and src folders. Then I wrote the header file for the WebCrawler class, which will act as the blueprint for the crawler.
 
-I have written the header for WebCrawler which is going to be the blueprint for the WebCrawler object 
-for frontier as in design proposal i have decided to build a frontier class which is just going to wrapper around a linkedlist object and act as queue with fifo but in acutal implementaion in my datastructure library i have created a different data structure queue which is just a wrapper around the linkedlist object with linkedlist obj being private and have function like push,pop,size,empty public 
-while making queue i learn about the rule of zero means that i do not have to create destructor,copyconstructor,(=)operator overload for class if its member manage their own resources,compiler will generate these special member function
+Initially, according to my design proposal, I planned to create a separate Frontier class that would simply wrap a LinkedList and behave like a FIFO queue. However, while implementing my Data Structures Library, I had already created a Queue data structure that internally uses a private LinkedList object and provides operations such as push(), pop(), size(), and empty(). Since it already fulfilled the requirements of the frontier, I decided to reuse it instead of creating another wrapper. While implementing the queue, I also learned about the Rule of Zero, which says that if a class contains members that manage their own resources, then the compiler-generated destructor, copy constructor, and copy assignment operator are usually sufficient.
 
- ----------
- Now I have started working on the fetcher part i do not know much about the fetcher so i have decided to first learn about it. As instructed there are two type of pages static and dynamic, in dynamic pages the page content is not inside the html tag when it return but the content loads on the client side after the page is return.Therefore for starting I have decided to make the fetcher to only load static html pages
+Next, I started working on the fetcher. Since I did not know much about how a fetcher works, I spent some time learning about it. I learned that there are two types of web pages: static and dynamic. Static pages return all their content in the HTML itself, whereas dynamic pages load some content later using JavaScript on the client side. To keep the project simple initially, I decided that my fetcher will only support static HTML pages.
 
- I am going to use libcurl for this and I am learning about it.
- I am able to create a basic libcurl implementation which store the html of the given URL into a string.For creating this I used curl_easy_interface, curl_easy_interface is used for data transfer over network it is synchoronous means it just block the process until the process is completed.
- First I generate a handle using curl_easy_init() which is pointer of CURL the CURL object will created in the heap and have all the config for network transfer, we can't directly access its member so we use public API like curl_easy_setopt() to set out option.
- The one most important option is the CURLOPT_URL by which we pass the URL to the object.The other important option are CURLOPT_WRITEFUNCTION and CURLOPT_WRITEDATA if we didn't set this option and call curl_easy_perform() the data from the url is going to be pasted on the terminal.
+I chose to use libcurl for downloading web pages. I learned about the libcurl Easy Interface and how it performs synchronous network requests. I created a simple program that downloads the HTML of a webpage and stores it in a std::string. During this process, I learned how curl_easy_init() creates a handle, how curl_easy_setopt() is used to configure the request, and why CURLOPT_URL, CURLOPT_WRITEFUNCTION, and CURLOPT_WRITEDATA are important.
 
- -------
- Now I am working on making fetcher class to make all this implemenation abstract and encapsulate the real process.
+After understanding the basics, I implemented the Fetcher class by creating fetcher.h and fetcher.cpp. While testing it, I encountered a linker error because CMake was not linking the libcurl library. I fixed this by adding target_link_libraries(main PRIVATE CURL::libcurl). After that, I encountered another error because I had forgotten to call find_package(CURL REQUIRED) before linking the library. Once I added it, the project built successfully.
 
-I have implemented the fetcher.h and fetcher.cpp file after that I wrote a simple code for testing the fetcher in the main and use CMakeLists to compile it into a main executable file but I face this error 
- ![cmake can't find curl](image.png)
-
- Actually this is not a compiler error but a linker error it tells that the linker sees the declaration of these function in the curl/curl.h but could not find their implementation.
-
- Solution -> The simple solution is to add the line target_link_libraries(main PRIVATE CURL::libcurl)
- inside the CMakeLists.txt so that linker combine the implemenation from this external library
-
- Another error I face just after that 
-
- It happen because I need to call find_package(CURL REQUIRED) before target_link_libraries().
-
- Solution -> Added the find_package(CURL REQUIRED) line in CMakeLists.txt
-
- Afer running it I am able to get the desired result the html of the page with all tags
- 
+By the end of the day, I was able to successfully fetch the HTML of a webpage and store the complete response inside a string. This gives me a working foundation for the fetcher, and I can now move on to implementing the remaining components of the WebCrawler.
