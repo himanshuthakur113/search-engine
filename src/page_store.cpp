@@ -7,27 +7,40 @@
 PageStore::PageStore(const std::string &dir)
 {
     directory = dir;
-    page_cnt = 0;
+    next_page_id = 0;
     try {
         std::filesystem::create_directories(directory);
     } catch (...) {}
 }
 
-void PageStore::save(const std::string &html)
+void PageStore::save(Page page)
 {
-    std::filesystem::create_directories(directory);
-    std::string filepath = directory + "/page_" + std::to_string(page_cnt) + ".txt";
-    std::ofstream file(filepath);
-    if(!file.is_open())
-    {
-        throw std::runtime_error("failed to create file: " + filepath);
-    }
+    page.id = next_page_id;
+    next_page_id++;
 
-    file << html;
-    page_cnt++;
+    buffer.append(page);
+    
+}
+
+void PageStore::flush()
+{
+    std::ofstream metadata(directory + "/metadata.txt",std::ios::app);
+    for(int i = 0;i < buffer.size(); ++i)
+    {
+        std::string filepath = directory + "/page_" +  std::to_string(buffer[i].id) + ".txt";
+        std::ofstream file(filepath);
+        if(!file.is_open())
+        {
+            throw std::runtime_error("failed to create file: " + filepath);
+        }
+
+        file << buffer[i].html;
+        metadata << buffer[i].id << " " << buffer[i].url << "\n";
+    }
+    buffer.clear();
 }
 
 int PageStore::pages_saved() const
 {
-    return page_cnt;
+    return buffer.size();
 }

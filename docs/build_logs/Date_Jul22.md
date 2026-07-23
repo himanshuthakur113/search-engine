@@ -28,3 +28,14 @@ I rewrite the whole loop to handle all these cases
 
 Now There also one more bug which it that in my resolve function I didn't return the port part.
 So need to add that 
+
+Okay I also fixed all the other bug in the normalization function which caused problem with ../ type of urls
+
+Now I am thinking of attaching another storage to this to write pages the thing that I am going to do is to make it store pages in the memory during running of crawler then after it finish running then store them inside the disk afterward maybe in a database
+
+How I am going to do that first I create a class Page which is 
+
+
+![alt text](image-12.png)
+
+![alt text](image-13.png)

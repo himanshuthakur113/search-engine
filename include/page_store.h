@@ -1,17 +1,21 @@
-#ifndef PAGE_H
-#define PAGE_H
+#ifndef PAGE_STORE_H
+#define PAGE_STORE_H
 #include <string>
+#include "page.h"
+#include "dynamic_array.h"
 
 class PageStore
 {
     private:
         std::string directory;
-        int page_cnt;
+        int next_page_id;
+        DA<Page> buffer;
 
     public:
         PageStore(const std::string &dir = "../pages");
-        void save(const std::string &html);
+        void save(Page page);
         int pages_saved() const;
+        void flush();
 
 };
 

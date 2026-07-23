@@ -5,6 +5,7 @@
 #include <filesystem>
 #include <cctype>
 #include "url_handler.h"
+#include "page.h"
 
 WebCrawler::WebCrawler()
 {
@@ -99,7 +100,6 @@ DA<std::string> WebCrawler::link_extractor(const std::string &html)
 void WebCrawler::crawl(const CrawlTask& seedTask)
 {   
 
-    Fetcher fetcher;
     frontier.push(seedTask);
     visited.markVisited(seedTask.url);
 
@@ -114,8 +114,12 @@ void WebCrawler::crawl(const CrawlTask& seedTask)
 
         try{
             std::string html = fetcher.fetch(task.url);
-          
-            pagestore.save(html);
+            
+            Page page;
+            page.url = task.url;
+            page.html = html;
+
+            pagestore.save(page);
             std::cout <<"write page" <<std::endl;
 
 
@@ -148,4 +152,5 @@ void WebCrawler::crawl(const CrawlTask& seedTask)
         continue;
         }
     }
+    pagestore.flush();
 }

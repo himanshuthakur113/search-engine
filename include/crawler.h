@@ -1,4 +1,5 @@
 #include <string>
+#include "fetcher.h"
 #include "crawl_task.h"
 #include "hash_map.h"
 #include "queue.h"
@@ -13,6 +14,7 @@ class WebCrawler
     private:
         int maxDepth;
         int maxPages;
+        Fetcher fetcher;
         Frontier frontier;
         VisitedSet visited;
         PageStore pagestore;

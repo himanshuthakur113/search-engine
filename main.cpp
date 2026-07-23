@@ -9,7 +9,7 @@ int main()
     string url = "https://gcdharamshala.in/";
     CrawlTask seedTask(url,0);
     
-    WebCrawler crawler(3,100);
+    WebCrawler crawler(3,10);
 
     crawler.crawl(seedTask);
 }

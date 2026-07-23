@@ -1,3 +1,5 @@
+#ifndef FETCEHER_H
+#define FETCEHER_H
 #include <string>
 #include <curl/curl.h>
 
@@ -10,3 +12,4 @@ class Fetcher
         ~Fetcher();
         std::string fetch(const std::string& url);
 };
+#endif
