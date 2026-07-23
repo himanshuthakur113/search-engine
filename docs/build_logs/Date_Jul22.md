@@ -1,6 +1,6 @@
 # Build Log
 
-## Date: 23/07/2026
+## Date: 22/07/2026
 
 ### Session - 1
 
@@ -31,7 +31,7 @@ I fixed it by clearing all URL component members at the beginning of the `split_
 
 ---
 
-## Date: 23/07/2026
+## Date: 22/07/2026
 
 ### Session - 2
 
@@ -55,7 +55,7 @@ I modified the fetch logic so that an empty HTML response is treated as a failed
 
 ---
 
-## Date: 23/07/2026
+## Date: 22/07/2026
 
 ### Session - 3
 
@@ -107,7 +107,7 @@ This makes the extractor significantly more reliable when crawling real-world we
 
 ---
 
-## Date: 23/07/2026
+## Date: 22/07/2026
 
 ### Session - 4
 
@@ -136,7 +136,7 @@ These cases were producing incorrect normalized URLs.
 
 ---
 
-## Date: 23/07/2026
+## Date: 22/07/2026
 
 ### Session - 5
 

@@ -1,13 +1,76 @@
-Today I completed the design proposal for the WebCrawler project. I have not added much detail about the fetcher yet because I wanted to first understand how it works before finalizing its design. However, I completed the overall architecture and basic layout of the project.
+# Day 1 Journal
 
-After completing the proposal, I started building the project. I first created the basic project structure with separate include and src folders. Then I wrote the header file for the WebCrawler class, which will act as the blueprint for the crawler.
+## Section 1 — Specific Bug
 
-Initially, according to my design proposal, I planned to create a separate Frontier class that would simply wrap a LinkedList and behave like a FIFO queue. However, while implementing my Data Structures Library, I had already created a Queue data structure that internally uses a private LinkedList object and provides operations such as push(), pop(), size(), and empty(). Since it already fulfilled the requirements of the frontier, I decided to reuse it instead of creating another wrapper. While implementing the queue, I also learned about the Rule of Zero, which says that if a class contains members that manage their own resources, then the compiler-generated destructor, copy constructor, and copy assignment operator are usually sufficient.
+### Bug 1: Linker Error
 
-Next, I started working on the fetcher. Since I did not know much about how a fetcher works, I spent some time learning about it. I learned that there are two types of web pages: static and dynamic. Static pages return all their content in the HTML itself, whereas dynamic pages load some content later using JavaScript on the client side. To keep the project simple initially, I decided that my fetcher will only support static HTML pages.
+While testing the `Fetcher` class, the project compiled successfully but failed during linking because the libcurl library was not linked with the executable.
 
-I chose to use libcurl for downloading web pages. I learned about the libcurl Easy Interface and how it performs synchronous network requests. I created a simple program that downloads the HTML of a webpage and stores it in a std::string. During this process, I learned how curl_easy_init() creates a handle, how curl_easy_setopt() is used to configure the request, and why CURLOPT_URL, CURLOPT_WRITEFUNCTION, and CURLOPT_WRITEDATA are important.
+### Bug 2: CMake Error
 
-After understanding the basics, I implemented the Fetcher class by creating fetcher.h and fetcher.cpp. While testing it, I encountered a linker error because CMake was not linking the libcurl library. I fixed this by adding target_link_libraries(main PRIVATE CURL::libcurl). After that, I encountered another error because I had forgotten to call find_package(CURL REQUIRED) before linking the library. Once I added it, the project built successfully.
+After adding
 
-By the end of the day, I was able to successfully fetch the HTML of a webpage and store the complete response inside a string. This gives me a working foundation for the fetcher, and I can now move on to implementing the remaining components of the WebCrawler.
+```cmake
+target_link_libraries(main PRIVATE CURL::libcurl)
+```
+
+CMake produced another error because the `CURL::libcurl` target had not been imported.
+
+---
+
+## Section 2 — Failed Attempt
+
+Initially, I assumed that simply including the header file
+
+```cpp
+#include <curl/curl.h>
+```
+
+was sufficient to use libcurl. Although the compiler could find the function declarations, the linker failed because the executable was not linked against the libcurl library.
+
+I first added
+
+```cmake
+target_link_libraries(main PRIVATE CURL::libcurl)
+```
+
+but this still failed because I had not imported the CMake target. After reading the CMake documentation, I realized that `find_package(CURL REQUIRED)` must be called before `target_link_libraries()`. Once I added it, the project built successfully.
+
+
+---
+
+## Section 3 — Code Reference
+
+**Commit Hash**
+
+`dc433f6 Implement Fetcher using libcurl`
+
+`84287a2 Make change in cmakelist and basic link_extractor idea`
+
+**Files Modified**
+
+- `include/webcrawler.h`
+- `include/fetcher.h`
+- `src/fetcher.cpp`
+- `src/main.cpp`
+- `CMakeLists.txt`
+
+**Relevant Line Numbers**
+
+```
+include/webcrawler.h      : Lines ___ - ___
+include/fetcher.h         : Lines ___ - ___
+src/fetcher.cpp           : Lines ___ - ___
+src/main.cpp              : Lines ___ - ___
+CMakeLists.txt            : Lines ___ - ___
+```
+
+---
+
+## Section 4 — Learning Reflection
+
+Today I learned the difference between **compilation** and **linking**. Before today, I thought that including a library header was enough to use an external library. After debugging the linker error, I understood that the compiler only checks whether the function declarations exist, while the linker is responsible for finding the actual implementations inside the library. This helped me better understand how CMake and external libraries work together.
+
+I also learned how the **libcurl Easy Interface** performs network requests. Initially, I expected the downloaded HTML to be returned directly, but I learned that libcurl instead uses callback functions to decide where the received data should be stored. Understanding the purpose of `CURLOPT_WRITEFUNCTION` and `CURLOPT_WRITEDATA` gave me a much better understanding of how network libraries separate data transfer from data storage.
+
+Another important design decision I made today was to reuse my existing `Queue` implementation as the crawler's frontier instead of creating another wrapper around `LinkedList`. This made the design simpler and reinforced my understanding of the **Rule of Zero**, where classes that contain members managing their own resources generally do not require custom destructors, copy constructors, or copy assignment operators.

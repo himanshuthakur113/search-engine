@@ -1,15 +1,64 @@
-Today I resumed working on the URL handler. Initially, I was splitting the URL into different components directly inside the constructor, but I decided that this was not a good design. Instead, I created a separate function named split_url() that parses the URL into its different components, and I simply call this function from the constructor. This keeps the constructor cleaner and makes the parsing logic reusable.
+# Day 3 Journal
 
-After that, I implemented the resolve_url() function. This function takes two arguments: the base URL and the extracted URL that needs to be resolved. I handled four different cases. If the extracted URL is already an absolute URL, it is returned as it is. If it is protocol-relative, I add the protocol from the base URL. If it is root-relative, I append it to the website's root. Finally, if it is a normal relative URL such as "contact" or "../contact", I resolve it relative to the base URL and return the resulting absolute URL.
+## Section 1 — Specific Bug
 
-Once the resolver was completed, I integrated it into the crawl() function. While doing this, I noticed that it would be useful to create a URL object immediately after popping a URL from the frontier. Since this URL becomes the base URL for all links extracted from that page, having its components already parsed makes the comparisons and resolution logic much simpler. After making these changes, I tested the crawler, and the URL resolution worked correctly.
+### Bug 1: Runtime Error
 
-Next, I started implementing the URL normalization function. Inside this function, I created a temporary URL object using the URL returned by the resolver. I then performed several normalization steps, including ensuring that an empty path is replaced with /, converting the scheme and host to lowercase, removing fragments, resolving .. path components, and removing default port numbers.
+After integrating the URL normalizer into the crawler, the program terminated with the following runtime error:
 
-After integrating the normalizer into the crawler, I encountered a runtime error. The error message pointed to operator[](size_type) inside basic_string.h and reported that _pos <= size() had failed. From this, I understood that somewhere in my code I was trying to access a character outside the bounds of a std::string.
+```text
+basic_string.h: operator[](size_type):
+Assertion '_pos <= size()' failed.
+```
 
-My first suspicion was the link_extractor() function because I had recently changed one of its loop conditions to iterate until html.size() - 7. However, after checking the logic carefully, I realized that this was not the actual cause of the problem. I then suspected the split_url() function because it accesses characters using url[i], but after further testing, I found that the same error still occurred elsewhere.
+This indicated that somewhere in the program I was trying to access a character outside the bounds of a `std::string`.
 
-To identify the real problem, I decided to debug the program using gdb. The debugger showed me the exact line where the program crashed. I discovered that the HTML string was sometimes empty, so html.size() was equal to zero. Since html.size() returns an unsigned size_t, calculating html.size() - 6 caused an unsigned underflow, producing a very large positive value instead of a negative number. As a result, the loop condition became true, and the program attempted to access characters beyond the end of the string.
+---
 
-I fixed this bug by changing the loop condition to i + 6 < html.size(), which correctly checks that there are enough remaining characters before accessing them. After making this change, the runtime error was resolved, and the crawler continued working as expected
+## Section 2 — Failed Attempt
+
+Initially, I suspected that the problem was inside the `link_extractor()` function because I had recently modified one of its loop conditions to iterate until `html.size() - 7`. After reviewing the code, I realized that this was not the source of the error.
+
+My next assumption was that the bug was inside the `split_url()` function since it accessed characters using `url[i]`. However, after testing, the program still crashed.
+
+To identify the actual problem, I used **gdb** to debug the program. The debugger showed that the crash occurred when the HTML string was empty. Since `html.size()` returns an unsigned `size_t`, subtracting six from zero resulted in an unsigned underflow, producing a very large positive value. Consequently, the loop condition evaluated to true, and the program attempted to access characters beyond the end of the string.
+
+I fixed the problem by replacing the loop condition
+
+```cpp
+i < html.size() - 6
+```
+
+with
+
+```cpp
+i + 6 < html.size()
+```
+
+This guarantees that enough characters remain before accessing them and prevents out-of-bounds access.
+
+---
+
+## Section 3 — Code Reference
+
+**Commit Hash**
+
+`8e578f9 Add URL class for parsing and normalization`
+`ae08c51 Implemented url_resovler function`
+
+**Files Modified**
+
+- `include/url_handler.h`
+- `src/url_handler.cpp`
+- `src/webcrawler.cpp`
+
+
+---
+
+## Section 4 — Learning Reflection
+
+Today I learned that constructors should focus on object initialization rather than containing large amounts of processing logic. By moving the URL parsing code into a separate `split_url()` function and calling it from the constructor, the class became cleaner and the parsing logic became reusable whenever the URL needed to be parsed again.
+
+I also gained a much better understanding of URL resolution and normalization. Before today, I thought resolving a URL simply meant appending paths together. While implementing `resolve_url()`, I realized that URLs can be absolute, protocol-relative, root-relative, or relative to the current path, and each case must be handled differently. Similarly, I learned that normalization involves much more than converting text to lowercase—it also includes handling default ports, resolving `..` path segments, removing fragments, and ensuring the URL follows a canonical form.
+
+Finally, debugging this runtime error taught me an important lesson about unsigned integer types in C++. I previously overlooked the fact that `std::string::size()` returns a `size_t`. Subtracting a value from zero does not produce a negative number but instead causes an unsigned underflow, resulting in a very large positive value. Using **gdb** to trace the execution helped me understand the root cause instead of relying on guesswork, and it reinforced the importance of checking array bounds correctly.

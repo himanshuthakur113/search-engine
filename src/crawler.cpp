@@ -1,8 +1,6 @@
 #include "crawler.h"
 #include "fetcher.h"
 #include <iostream>
-#include <fstream>
-#include <filesystem>
 #include <cctype>
 #include "url_handler.h"
 #include "page.h"
@@ -113,15 +111,25 @@ void WebCrawler::crawl(const CrawlTask& seedTask)
         CrawlTask task = frontier.pop();
 
         try{
-            std::string html = fetcher.fetch(task.url);
+
+            std::string html;
             
-            Page page;
-            page.url = task.url;
-            page.html = html;
+            if(pagestore.isCached(task.url))
+            {
+                html = pagestore.fetch(task.url);
+                std::cout << "Write through DB" <<"\n";
+            }
+            else
+            {
+                html = fetcher.fetch(task.url);
+                Page page;
+                page.url = task.url;
+                page.html = html;
 
-            pagestore.save(page);
-            std::cout <<"write page" <<std::endl;
+                pagestore.save(page); //if db has page it didn't store again
+                std::cout <<"write page" <<std::endl;
 
+            }  
 
             if(task.depth >= maxDepth)
             {
@@ -142,9 +150,7 @@ void WebCrawler::crawl(const CrawlTask& seedTask)
 
                 frontier.push(CrawlTask(resolved_url, task.depth + 1));
                 visited.markVisited(resolved_url);
-            }
-
-        
+            }  
         }
         catch(const std::exception &e)
         {

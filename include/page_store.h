@@ -17,6 +17,8 @@ class PageStore
         void save(Page page);
         int pages_saved() const;
         void flush();
+        bool isCached(const std::string &url);
+        std::string fetch(const std::string &url);
 
 };
 

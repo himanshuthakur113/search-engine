@@ -1,6 +1,5 @@
 #include "page_store.h"
-
-
+#include "sqlite3.h"
 #include <stdexcept>
 
 PageStore::PageStore(const std::string &dir):
@@ -10,12 +9,26 @@ PageStore::PageStore(const std::string &dir):
 
 
 void PageStore::save(Page page)
-{
+{   
+    if(db.exists(page.url))
+    {
+        return;
+    }
     page.id = next_page_id;
     next_page_id++;
 
     buffer.append(page);
     
+}
+
+bool PageStore::isCached(const std::string &url)
+{
+    return (db.exists(url));
+}
+
+std::string PageStore::fetch(const std::string &url)
+{
+    return db.fetch(url);
 }
 
 void PageStore::flush()

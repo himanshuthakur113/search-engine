@@ -1,25 +1,71 @@
-Today I started working on the URL extraction logic for the WebCrawler. The first thing I did was create a private function named link_extractor inside the WebCrawler class. My idea is for this function to return an array of URLs extracted from the HTML returned by the fetcher so that each URL can later be processed individually. Initially, I wrote a very simple hardcoded URL extraction logic just to verify the overall approach.
+# Day 2 Journal
 
-While testing the link_extractor, I needed to create a WebCrawler object in main.cpp. During compilation, I realized that my Data Structures Library was not being included in the project. To solve this, I added the Data Structures Library as a subdirectory in the WebCrawler project and modified the CMakeLists.txt files of both projects. After that, I encountered another issue where the compiler could not find linked_list.tpp, which was being used by the HashMap. This happened because the template implementation files were inside the src folder but were not part of the include directories. I fixed this by adding the src folder as an include directory for the interface library in the Data Structures Library CMake configuration.
+## Section 1 — Specific Bug
 
-After fixing the build issues, I encountered another bug in my DynamicArray implementation. The shrink function was using a pointer that had been declared inside an if block and later accessed outside that block. Since the pointer was out of scope, the code failed to compile. I fixed this by declaring the pointer outside the if block and initializing it with nullptr.
+### Bug 1: Data Structures Library Not Found
 
-Once these issues were resolved, my temporary link extractor started working. It was able to extract everything after `<a href= until it encountered the closing >` character. Although this was only a temporary implementation, it confirmed that the extraction logic was working.
+While testing the `link_extractor()` function, the project failed to build because the WebCrawler project could not find my Data Structures Library.
 
-I then continued improving the URL extraction logic. After making some changes, the program suddenly stopped printing any URLs. After debugging the code, I found that the problem was in one of my while loop conditions. I was checking each character of the string using the logical && operator, which caused the loop to terminate as soon as one character did not match "https". Replacing && with || fixed the problem because the loop now continued until the complete "https" sequence was found. After that, I copied the URL starting from the "https" position until reaching the stopping condition.
+### Bug 2: Template Implementation File Not Found
 
-Although this version worked, I realized it had several limitations. It only supported https links and ignored http and relative URLs. I decided to redesign the extraction logic. Instead of searching directly for "https", I started searching for the href attribute. Once href was found, I skipped characters until reaching either a single quote or double quote and then copied everything until the matching closing quote. During this implementation, I also learned how to represent a single quote character inside a character literal using '\''.
+After adding the Data Structures Library as a subdirectory, the compiler produced another error because `linked_list.tpp` could not be found. The template implementation files were located inside the `src` directory, but this directory was not added to the include paths.
 
-While implementing the new approach, I ran into another issue where the function produced no output. After checking the code, I discovered that the problem was simply a typo where I had accidentally written != instead of ==. After correcting it, the extractor worked much better.
+### Bug 3: DynamicArray Compilation Error
 
-The output now contained many different kinds of links, including normal web URLs as well as entries like #, mailto:, tel:, javascript:void(0), http:, and https:. This made me realize that extracting URLs alone was not enough and that I also needed a normalization step to filter invalid links and convert relative URLs into absolute ones.
+The `DynamicArray::shrink()` function failed to compile because a pointer was declared inside an `if` block and later accessed outside its scope.
 
-Before implementing the normalizer, I tried running a basic version of the complete crawler. I wrote a simple crawl() function that fetched a page, extracted URLs, and attempted to save the downloaded HTML into the pages directory. While doing this, I found another issue because my generic Queue implementation was missing #include "queue.tpp" at the end of queue.h. After fixing that, the project compiled successfully.
+### Bug 4: URL Extraction Returned No Output
 
-During execution, I encountered another error where the fetcher threw an exception because curl_easy_perform() did not return CURLE_OK. From my understanding, this happened because many of the extracted URLs were not yet normalized and therefore could not be fetched successfully. I added exception handling around the fetch operation using a try-catch block so that the crawler would not terminate when a fetch failed.
+While improving the URL extraction logic, the program suddenly stopped printing any URLs. The issue was caused by an incorrect `while` loop condition that used the logical `&&` operator instead of `||` when searching for `"https"`.
 
-I also noticed that the downloaded HTML pages were not appearing in the expected location. After investigating, I found that the program had created the pages directory inside the build directory because the executable was running from there.
+Later, while redesigning the extraction logic, I encountered another bug where the extractor produced no output because of a typo. I had accidentally written `!=` instead of `==`.
 
-Finally, I started designing the URL normalization component. I decided that the first step should be breaking a URL into its individual components such as scheme, host, port, path, query, and fragment. I implemented this by parsing the URL and storing each component in separate string variables.
+### Bug 5: Fetch Failure
 
-As I thought more about URL normalization, I realized that it would become quite complex. Instead of keeping all the logic inside the WebCrawler class, I decided to create a separate URL class inside a new url_handler file. This class will be responsible for parsing URLs, resolving relative URLs into absolute ones, filtering out invalid or unsupported URLs, and performing normalization. I also moved the URL parsing code into the constructor of this class so that every URL object automatically stores its parsed components as private member variables. This design should make the crawler code cleaner and make future URL processing much easier
+While testing the complete crawler, `curl_easy_perform()` failed for many extracted URLs because they were not normalized. The fetcher threw an exception, causing the crawler to terminate.
+
+### Bug 6: Pages Saved in Wrong Directory
+
+The downloaded HTML pages were not appearing inside the expected `pages` folder. After investigation, I found that the program had created the directory inside the `build` folder because the executable was running from that location.
+
+---
+
+## Section 2 — Failed Attempt
+
+My first implementation of the URL extractor searched directly for the string `"https"` and copied characters until the closing `>` character. Although this worked for a few links, it completely ignored `http`, relative URLs, and many valid HTML formats.
+
+I then modified the search loop, but the extraction stopped working because I incorrectly used the logical `&&` operator while searching for `"https"`. The loop terminated as soon as one character did not match instead of continuing until the entire sequence was found.
+
+Instead of continuing with this approach, I redesigned the extractor to search for the `href` attribute itself. Once `href` was found, the parser skipped characters until reaching either a single quote or double quote and then copied the URL until the matching closing quote. This approach handled a much wider variety of HTML link formats.
+
+After getting the extractor working, I realized that simply extracting URLs was not enough. The output also contained entries such as `#`, `mailto:`, `tel:`, `javascript:void(0)`, and relative URLs. This led me to decide that the crawler required a dedicated URL normalization component.
+
+---
+
+## Section 3 — Code Reference
+
+**Commit Hash**
+
+`c583f02 Completed link_extractor`
+
+`70052a4 Implement crawl function without max_depth and normalization`
+
+**Files Modified**
+
+- `include/webcrawler.h`
+- `src/webcrawler.cpp`
+- `include/url_handler.h`
+- `src/url_handler.cpp`
+- `CMakeLists.txt`
+- Data Structures Library `CMakeLists.txt`
+- `queue.h`
+- `dynamic_array.h`
+
+
+## Section 4 — Learning Reflection
+
+Today I learned that extracting hyperlinks from HTML is much more complicated than simply searching for `"https"`. Different webpages represent links in different ways, including quoted and unquoted attributes, uppercase HTML tags, relative URLs, and special links such as `mailto:` and `javascript:`. Because of this, I realized that a reliable extractor should focus on parsing the `href` attribute rather than searching for specific URL prefixes.
+
+I also understood the importance of separating responsibilities inside the crawler. Initially, I planned to perform URL parsing and normalization directly inside the `WebCrawler` class, but as the logic became more complex, I realized it would make the crawler difficult to maintain. This led me to design a separate `URL` class responsible for parsing URLs into components, resolving relative URLs, and performing normalization. Separating these responsibilities makes the crawler architecture cleaner and easier to extend.
+
+Another important lesson was related to C++ templates and project organization. I encountered build errors because template implementation files were not included correctly, reinforcing my understanding of how template definitions must be visible during compilation. I also became more comfortable debugging logical errors by tracing loop conditions instead of assuming the overall algorithm was incorrect.

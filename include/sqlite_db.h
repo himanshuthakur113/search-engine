@@ -14,6 +14,7 @@ class SQLiteDB
         SQLiteDB(const std::string& filename);
         ~SQLiteDB();
         void insert(const Page& page);
+        std::string fetch(const std::string& url);
         Page get(int id);
         bool exists(const std::string &url);
 };

@@ -38,7 +38,7 @@ SQLiteDB::~SQLiteDB()
 
 void SQLiteDB::insert(const Page &page)
 {
-    const char* sql = "INSERT INTO pages(id,url,html) VALUES(?,?,?);";
+    const char* sql = "INSERT INTO pages(url,html) VALUES(?,?);";
     
     sqlite3_stmt* stmt = nullptr;
 
@@ -48,9 +48,8 @@ void SQLiteDB::insert(const Page &page)
         throw std::runtime_error("Can not create prepared statement");
     }
 
-    sqlite3_bind_int(stmt,1,page.id);
-    sqlite3_bind_text(stmt,2,page.url.c_str(),-1,SQLITE_TRANSIENT);
-    sqlite3_bind_text(stmt,3,page.html.c_str(),-1,SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt,1,page.url.c_str(),-1,SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt,2,page.html.c_str(),-1,SQLITE_TRANSIENT);
 
     res = sqlite3_step(stmt);
     if(res != SQLITE_DONE)
@@ -115,3 +114,26 @@ Page SQLiteDB::get(int id)
     return page;
 
 }
+
+std::string SQLiteDB::fetch(const std::string& url)
+{
+    const char* sql = "SELECT html FROM pages WHERE url  = ?LIMIT 1;";
+    sqlite3_stmt* stmt = nullptr;
+
+    int res = sqlite3_prepare_v2(db,sql,-1,&stmt,nullptr);
+    if(res != SQLITE_OK)
+    {
+        throw std::runtime_error("Cannot create the fetch command");
+    }
+    sqlite3_bind_text(stmt,1,url.c_str(),-1,SQLITE_TRANSIENT);
+    res = sqlite3_step(stmt);
+
+    if(res != SQLITE_ROW)
+        {
+            throw std::runtime_error("page not found");
+        }
+    std::string html = (const char*)sqlite3_column_text(stmt, 0);
+    sqlite3_finalize(stmt);
+    return html;
+ 
+}   
