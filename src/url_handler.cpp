@@ -193,6 +193,7 @@ std::string URL::normalize_url(const std::string &url)
         {
             if(path_part == ".."){
                 if(top >= 0) top--;
+                path_part.clear();
             }
             else if(path_part != "." && path_part != "")
             {   

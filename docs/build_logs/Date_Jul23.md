@@ -23,4 +23,67 @@ Okay it start working properly the already loaded page are not saved in the data
 what there is a still a problem if a page is already in database it will not be stored again but the url for it will again be fetched and the links from the page will be again extracted and push into the queue there pages will not be stored inside the buffer but there is going to be extra fetch and extraction resolve and normalization 
 To solve this I can do is to fetch the page from the database instead from the web 
 i have implemented the fetch logic now going to use in crawl function
-Before running since the db is wrapped around page store need to make some change inside that too
+Before running since the db is wrapped around page store need to make some change inside that pagestore logic too since i can't access the fetch logic directly 
+
+created two function in page store one to check and one to fetch 
+
+the flow of crawler is now like 
+## Updated Crawler Flow
+
+```text
+Pop URL from Frontier
+        │
+        ▼
+Is page already in database?
+        │
+   ┌────┴────┐
+   │         │
+ Yes         No
+   │         │
+   ▼         ▼
+Load HTML   Fetch from Web
+               │
+   │           ▼
+        Store Page in PageBuffer
+from DB        │
+   │           ▼
+   │        Extract Links
+   │           │
+   │        Normalize URL     
+   │           │
+   └──────► Process Links
+                │
+                ▼
+             If Visited
+                       
+            ┌────┴────┐
+            │         │
+           Yes        No
+            │         │
+            ▼         ▼
+           Skip   Push into Frontier
+
+        
+            Flush Buffer
+                │
+                ▼
+            SQLite Database
+
+--
+
+Now I begin testing of the project 
+First I change the CMake file
+
+then i run the first test file for resolve url function it pass all test case 
+![resolve url](image-16.png)
+
+after it i run the normalizer and it failed one test case for Dot segments like url
+![normalizer](image-17.png)
+
+To handle this lets print the result 
+The result is like this Result = https://example.com/a/..c
+
+Make changes in the normalizer function and rerun
+Pass all the test cases 
+![normalizer fixed](image-18.png)
+
