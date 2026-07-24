@@ -117,7 +117,7 @@ Page SQLiteDB::get(int id)
 
 std::string SQLiteDB::fetch(const std::string& url)
 {
-    const char* sql = "SELECT html FROM pages WHERE url  = ?LIMIT 1;";
+    const char* sql = "SELECT html FROM pages WHERE url  = ? LIMIT 1;";
     sqlite3_stmt* stmt = nullptr;
 
     int res = sqlite3_prepare_v2(db,sql,-1,&stmt,nullptr);
@@ -130,6 +130,7 @@ std::string SQLiteDB::fetch(const std::string& url)
 
     if(res != SQLITE_ROW)
         {
+            sqlite3_finalize(stmt);
             throw std::runtime_error("page not found");
         }
     std::string html = (const char*)sqlite3_column_text(stmt, 0);

@@ -87,3 +87,6 @@ Make changes in the normalizer function and rerun
 Pass all the test cases 
 ![normalizer fixed](image-18.png)
 
+Next I test sqlite_db
+it passes all the test cases
+![sqlite_db](image-19.png)

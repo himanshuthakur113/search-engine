@@ -58,7 +58,8 @@ target_link_libraries(main PRIVATE
 
 add_executable(test_runner
     #test/test_url_resolver.cpp
-    test/test_url_normalizer.cpp
+    #test/test_url_normalizer.cpp
+    test/test_sqlite_db.cpp
 
     src/fetcher.cpp
     src/crawler.cpp
