@@ -62,7 +62,9 @@ add_executable(test_runner
     #test/test_sqlite_db.cpp
     #test/test_pageStore.cpp
     #test/test_fetcher.cpp
-    test/test_extractlinks.cpp
+    #test/test_extractlinks.cpp
+    #test/test_frontier.cpp
+    test/test_visitedSet.cpp
 
     src/fetcher.cpp
     src/crawler.cpp
