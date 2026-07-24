@@ -60,7 +60,9 @@ add_executable(test_runner
     #test/test_url_resolver.cpp
     #test/test_url_normalizer.cpp
     #test/test_sqlite_db.cpp
-    test/test_pageStore.cpp
+    #test/test_pageStore.cpp
+    #test/test_fetcher.cpp
+    test/test_extractlinks.cpp
 
     src/fetcher.cpp
     src/crawler.cpp
