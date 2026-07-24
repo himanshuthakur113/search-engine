@@ -59,4 +59,9 @@ it is roughly equivalent to TEXT = 0,TAG =1
 why used this if(state == 1) if we can do state == TAG show the intent clearly 
 i use switch statement to ignore `<script> and <style>`
 
+I still does not handle yet <SCRIPT> type of tags
+after it i implemented the comments by looking of comment and updating the state
 
+Now I am going to work on next function going to handle other html_parser cases in the fututre
+
+Next I am going to work on tokenizer 
