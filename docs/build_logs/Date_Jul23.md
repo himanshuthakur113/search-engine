@@ -1,34 +1,56 @@
-There's bug my crawler will not run on second time It is because when I first run the crawler the pages in the data base are stored with page id which are set by pageloader function which always start with zero
-Second time when I will run my crawler it would again try to store the pages from id 0 but since id 0 page already exist in the database it will throw an error and this will happen when the loop would end in the flush function when i try to load the pages into the db which are already there hence it will create a problem 
+# Build Log
 
-![alt text](image-14.png)
+## Date: 23/07/2026
 
-To solve this 
-First I make a change in pagestore save function I am not going to save pages in buffer which are already exist there also one more thing if i again run the webcrawler with the same seed url it should not follow the process again to fetch and extract link if the page is already there in the database right now this do not save that extra fetch and extract computaion but I will think of it next
+### Session - 1
 
-Even with this fix it does not that crash issue with the same id as in the next run crawler will still create page with id start from zero 
+### Work Completed
 
-The solution would be not use the id member with page object and store the page with id auto increment by dbms set up by itself as interger primary key 
+- While testing the crawler multiple times, I found a bug where the crawler would fail on the second execution.
+- The issue was caused by the `PageLoader` always assigning page IDs starting from `0`. During the second run, the crawler attempted to insert pages with the same IDs that already existed in the SQLite database, causing a primary key conflict during the `flush()` operation.
 
-I need to make change in the insert function of the sqlite_db.cpp and does not insert id of the page 
+![Second Run Error](image-14.png)
 
-Now retesting it first delete the old db then run the crawler two times
+- Initially, I modified the `PageStore::save()` function so that pages already present in the database were not added to the page buffer again.
+- Although this prevented duplicate pages from being buffered, it did not solve the crash because newly created `Page` objects were still being assigned IDs starting from `0` on every execution.
 
-okay the crawler fails on the first try i need to figure out what was the mistake
-The mistake is in the insert function I am using the old index 2,3 for url and html
+- After analyzing the problem, I decided that page IDs should not be managed by the crawler at all.
+- I changed the database design to let SQLite generate page IDs automatically using an `INTEGER PRIMARY KEY AUTOINCREMENT`.
+- To support this change, I modified the `insert()` function inside `sqlite_db.cpp` so that it no longer inserts the page ID and only stores the URL and HTML content.
 
-Okay it start working properly the already loaded page are not saved in the database again and the program can run second time too 
-![alt text](image-15.png)
+### Debugging
 
-what there is a still a problem if a page is already in database it will not be stored again but the url for it will again be fetched and the links from the page will be again extracted and push into the queue there pages will not be stored inside the buffer but there is going to be extra fetch and extraction resolve and normalization 
-To solve this I can do is to fetch the page from the database instead from the web 
-i have implemented the fetch logic now going to use in crawl function
-Before running since the db is wrapped around page store need to make some change inside that pagestore logic too since i can't access the fetch logic directly 
+- While retesting the new implementation after recreating the database, the crawler failed even on the first run.
+- After debugging, I found that the SQL insert statement was still using the old parameter indices (`2` and `3`) for the URL and HTML values.
+- I corrected the parameter bindings and reran the tests.
 
-created two function in page store one to check and one to fetch 
+### Result
 
-the flow of crawler is now like 
-## Updated Crawler Flow
+- The crawler now runs successfully multiple times.
+- Existing pages are no longer inserted again.
+- SQLite automatically generates unique page IDs for newly discovered pages.
+
+![Crawler Working](image-15.png)
+
+---
+
+## Session - 2
+
+### Work Completed
+
+- While further testing, I noticed another inefficiency in the crawler.
+- Even if a page already existed in the database, the crawler was still downloading the page from the web, extracting links, resolving URLs, and normalizing them again.
+- Although duplicate pages were no longer stored, this still resulted in unnecessary network requests and processing.
+
+### Optimization
+
+- To eliminate this redundant work, I decided to reuse the HTML already stored inside the database instead of downloading it again.
+- I implemented page retrieval logic in the SQLite layer.
+- Since the crawler interacts with the database only through `PageStore`, I added two new helper functions inside `PageStore`:
+  - `exists()` to check whether a page is already stored.
+  - `fetch()` to retrieve the stored page from the database.
+
+### Updated Crawler Flow
 
 ```text
 Pop URL from Frontier
@@ -42,20 +64,19 @@ Is page already in database?
    │         │
    ▼         ▼
 Load HTML   Fetch from Web
-               │
-   │           ▼
-        Store Page in PageBuffer
 from DB        │
    │           ▼
-   │        Extract Links
+   │      Store Page in Buffer
    │           │
-   │        Normalize URL     
+   │           ▼
+   │      Extract Links
    │           │
-   └──────► Process Links
+   │      Normalize URLs
+   │           │
+   └──────────► Process Links
                 │
                 ▼
-             If Visited
-                       
+          Already Visited?
             ┌────┴────┐
             │         │
            Yes        No
@@ -63,30 +84,88 @@ from DB        │
             ▼         ▼
            Skip   Push into Frontier
 
-        
-            Flush Buffer
+          Flush Buffer
                 │
                 ▼
-            SQLite Database
+         SQLite Database
+```
 
---
+---
 
-Now I begin testing of the project 
-First I change the CMake file
+## Session - 3
 
-then i run the first test file for resolve url function it pass all test case 
-![resolve url](image-16.png)
+### Testing
 
-after it i run the normalizer and it failed one test case for Dot segments like url
-![normalizer](image-17.png)
+- Began testing the complete project after implementing the crawler optimizations.
+- Updated the `CMakeLists.txt` configuration before running the unit tests.
 
-To handle this lets print the result 
-The result is like this Result = https://example.com/a/..c
+### URL Resolver Tests
 
-Make changes in the normalizer function and rerun
-Pass all the test cases 
-![normalizer fixed](image-18.png)
+- Executed all unit tests for the URL resolver.
+- All test cases passed successfully.
 
-Next I test sqlite_db
-it passes all the test cases
-![sqlite_db](image-19.png)
+![Resolve URL Tests](image-16.png)
+
+---
+
+### URL Normalizer Tests
+
+- Ran the URL normalizer test suite.
+- One test case failed while handling dot-segment (`.` and `..`) paths.
+
+![Normalizer Failed](image-17.png)
+
+- Printed the normalized output to identify the issue.
+
+```text
+Result = https://example.com/a/..c
+```
+
+- Fixed the dot-segment normalization logic.
+- Reran the complete test suite.
+- All URL normalizer test cases passed successfully.
+
+![Normalizer Fixed](image-18.png)
+
+---
+
+### SQLite Database Tests
+
+- Executed the SQLite database unit tests.
+- All test cases passed successfully.
+
+![SQLite Tests](image-19.png)
+
+---
+
+### PageStore Tests
+
+- Ran the `PageStore` test suite.
+- Verified page buffering, duplicate handling, and database wrapper functionality.
+- All test cases passed successfully.
+
+![PageStore Tests](image-20.png)
+
+---
+
+## Summary
+
+### Bugs Fixed
+
+- Fixed duplicate page ID issue that prevented the crawler from running multiple times.
+- Switched page ID generation to SQLite `AUTOINCREMENT`.
+- Corrected SQL parameter binding after modifying the insert query.
+- Prevented duplicate pages from being inserted into the database.
+- Added the ability to retrieve previously crawled pages directly from the database.
+- Eliminated unnecessary page downloads for already stored pages.
+- Fixed URL normalizer handling of dot-segment paths.
+
+### Test Results
+
+| Component | Status |
+|-----------|--------|
+| URL Resolver | ✅ Passed |
+| URL Normalizer | ✅ Passed |
+| SQLiteDB | ✅ Passed |
+| PageStore | ✅ Passed |
+| Multiple Crawler Runs | ✅ Passed |
