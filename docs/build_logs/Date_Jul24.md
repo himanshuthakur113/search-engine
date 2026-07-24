@@ -20,3 +20,14 @@ it Passes all the test cases
 After it the visitedSet test 
 it pases all the test cases
 ![visitedSet](image-24.png)
+
+Now fixing the project bugs 
+one bug that I encountered is that the buffer can have two same pages and at flush it can also put duplicate pages in the database and it will throw 
+db cannot insert page error
+
+Fix add a hashmap to the pagestore to check if the page is already inside buffer 
+
+Also since the pages are stored in data buffer if they are alot they can take a lot of ram space therefore flushing pages in ram after 10 pages 
+
+The flush transaction before is just using insert each would have a separate disk write therefore i added begin commit and rollback so transaction would take one disk write
+increasing the speed 

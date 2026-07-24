@@ -10,7 +10,7 @@ PageStore::PageStore(const std::string &dir):
 
 void PageStore::save(Page page)
 {   
-    if(db.exists(page.url))
+    if(db.exists(page.url) || buffered_urls.contains(page.url))
     {
         return;
     }
@@ -18,12 +18,17 @@ void PageStore::save(Page page)
     next_page_id++;
 
     buffer.append(page);
-    
+    buffered_urls.insert(page.url, 1);
+
+    if(buffer.size() >= 10)
+    {
+        flush();
+    }
 }
 
 bool PageStore::isCached(const std::string &url)
 {
-    return (db.exists(url));
+    return (db.exists(url) || buffered_urls.contains(url));
 }
 
 std::string PageStore::fetch(const std::string &url)
@@ -33,11 +38,28 @@ std::string PageStore::fetch(const std::string &url)
 
 void PageStore::flush()
 {
-    for(int i = 0;i < buffer.size(); ++i)
+    if(buffer.size() == 0)
     {
-        db.insert(buffer[i]);
+        return;
     }
+
+    try
+    {
+        db.beginTransaction();
+        for(int i = 0;i < buffer.size(); ++i)
+        {
+            db.insert(buffer[i]);
+        }
+        db.commitTransaction();
+    }
+    catch(...)
+    {
+        db.rollbackTransaction();
+        throw;
+    }
+
     buffer.clear();
+    buffered_urls.clear();
 }
 
 int PageStore::pages_saved() const

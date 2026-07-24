@@ -17,6 +17,9 @@ class SQLiteDB
         std::string fetch(const std::string& url);
         Page get(int id);
         bool exists(const std::string &url);
+        void beginTransaction();
+        void commitTransaction();
+        void rollbackTransaction();
 };
 
 #endif

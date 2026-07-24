@@ -3,6 +3,7 @@
 #include <string>
 #include "page.h"
 #include "dynamic_array.h"
+#include "hash_map.h"
 #include "sqlite_db.h"
 
 class PageStore
@@ -11,6 +12,7 @@ class PageStore
         SQLiteDB db;
         int next_page_id;
         DA<Page> buffer;
+        HashMap<std::string, int> buffered_urls;
 
     public:
         PageStore(const std::string &dir = "../data");

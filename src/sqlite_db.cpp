@@ -137,4 +137,36 @@ std::string SQLiteDB::fetch(const std::string& url)
     sqlite3_finalize(stmt);
     return html;
  
-}   
+}
+
+void SQLiteDB::beginTransaction()
+{
+    char* errMsg = nullptr;
+    int res = sqlite3_exec(db, "BEGIN TRANSACTION;", nullptr, nullptr, &errMsg);
+    if(res != SQLITE_OK)
+    {
+        std::string error = errMsg ? errMsg : "Failed to begin transaction";
+        if(errMsg) sqlite3_free(errMsg);
+        throw std::runtime_error(error);
+    }
+}
+
+void SQLiteDB::commitTransaction()
+{
+    char* errMsg = nullptr;
+    int res = sqlite3_exec(db, "COMMIT;", nullptr, nullptr, &errMsg);
+    if(res != SQLITE_OK)
+    {
+        std::string error = errMsg ? errMsg : "Failed to commit transaction";
+        if(errMsg) sqlite3_free(errMsg);
+        throw std::runtime_error(error);
+    }
+}
+
+void SQLiteDB::rollbackTransaction()
+{
+    char* errMsg = nullptr;
+    sqlite3_exec(db, "ROLLBACK;", nullptr, nullptr, &errMsg);
+    if(errMsg) sqlite3_free(errMsg);
+}
+
