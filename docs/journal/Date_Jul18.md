@@ -55,16 +55,6 @@ but this still failed because I had not imported the CMake target. After reading
 - `src/main.cpp`
 - `CMakeLists.txt`
 
-**Relevant Line Numbers**
-
-```
-include/webcrawler.h      : Lines ___ - ___
-include/fetcher.h         : Lines ___ - ___
-src/fetcher.cpp           : Lines ___ - ___
-src/main.cpp              : Lines ___ - ___
-CMakeLists.txt            : Lines ___ - ___
-```
-
 ---
 
 ## Section 4 — Learning Reflection

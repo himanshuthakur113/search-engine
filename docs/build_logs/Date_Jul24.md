@@ -65,3 +65,15 @@ after it i implemented the comments by looking of comment and updating the state
 Now I am going to work on next function going to handle other html_parser cases in the fututre
 
 Next I am going to work on tokenizer 
+okay the tokenizer works fine now I am going to work on normalizer 
+
+What normalizer do it do lot of stuff 
+but for right now I am making it to do only lowercasing 
+
+ok after it lets build the index data structure
+posting is the smallest unit of return inverted index
+for now it will just contain just the page_id
+
+the page_id it will use is from the database 
+
+next will be to implement a PostingList class the posting list class will have a dynamic array which will contain the 
