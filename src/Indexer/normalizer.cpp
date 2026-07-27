@@ -1,4 +1,4 @@
-#include "normalizer.h"
+#include "Indexer/normalizer.h"
 #include <cctype>
 
 std::string Normalizer::normalize(const std::string& word)

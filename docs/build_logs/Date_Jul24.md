@@ -337,7 +337,7 @@ Since `HashMap::find()` internally uses `LinkedList::find()`, a corresponding `c
 
 ### Indexer Workflow
 
-Implemented both
+Implemented both  
 
 - `indexer.h`
 - `indexer.cpp`

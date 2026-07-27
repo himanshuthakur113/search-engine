@@ -1,4 +1,4 @@
-#include "posting_list.h"
+#include "Indexer/posting_list.h"
 
 void PostingList::add_posting(int pageId)
 {

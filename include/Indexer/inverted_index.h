@@ -11,6 +11,7 @@ class InvertedIndex
         HashMap<std::string, PostingList> index;
 
     public:
+        void show(int n) const;
         void add_word(const std::string& word,int page_Id);
         bool contains(const std::string& word) const;
         const PostingList* search(const std::string& word) const;

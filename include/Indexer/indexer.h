@@ -15,9 +15,9 @@ private:
     Tokenizer tokenizer;
     Normalizer normalizer;
     InvertedIndex index;
+    void index_page(const Page& page);
 
 public:
-    void index_page(const Page& page);
     const InvertedIndex& get_index() const;
     void build(PageStore& store);
 };

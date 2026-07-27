@@ -1,4 +1,4 @@
-#include "html_parser.h"
+#include "Indexer/html_parser.h"
 
 enum class ParserState
 {
@@ -14,7 +14,7 @@ std::string HTMLParser::extract_text(const std::string& html)
     std::string text;
     ParserState state = ParserState::TEXT;
 
-    for (size_t i = 0; i < html.size(); ++i)
+    for (int i = 0; i < html.size(); ++i)
     {
         switch (state)
         {
