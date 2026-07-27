@@ -151,9 +151,8 @@ void WebCrawler::crawl(const CrawlTask& seedTask)
                     {
                         continue;
                     }
-
-                    frontier.push(CrawlTask(resolved_url, task.depth + 1));
                     visited.markVisited(resolved_url);
+                    frontier.push(CrawlTask(resolved_url, task.depth + 1));
                 }  
             }
             processed_pages++;
