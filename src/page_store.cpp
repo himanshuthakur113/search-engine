@@ -4,7 +4,8 @@
 
 PageStore::PageStore(const std::string &dir):
     db(dir + "/pages.db"),
-    next_page_id(0)
+    next_page_id(0),
+    saved_pages(0)
    {}
 
 
@@ -57,12 +58,17 @@ void PageStore::flush()
         db.rollbackTransaction();
         throw;
     }
-
+    saved_pages += buffer.size();
     buffer.clear();
     buffered_urls.clear();
 }
 
 int PageStore::pages_saved() const
+{
+    return saved_pages;
+}
+
+int PageStore::buffered_pages() const
 {
     return buffer.size();
 }

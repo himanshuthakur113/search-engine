@@ -9,12 +9,14 @@ WebCrawler::WebCrawler()
 {
     maxDepth = 0;
     maxPages = 0;
+    processed_pages = 0;
 }
 
 WebCrawler::WebCrawler(int _maxDepth,int _maxPages)
 {
     maxDepth = _maxDepth;
     maxPages = _maxPages;
+    processed_pages = 0;
 }
 
 DA<std::string> WebCrawler::link_extractor(const std::string &html)
@@ -103,7 +105,7 @@ void WebCrawler::crawl(const CrawlTask& seedTask)
 
     while(!frontier.empty())
     {   
-        if(pagestore.pages_saved() >= maxPages)
+        if(processed_pages >= maxPages)
         {
             break;
         }
@@ -113,8 +115,9 @@ void WebCrawler::crawl(const CrawlTask& seedTask)
         try{
 
             std::string html;
-            
-            if(pagestore.isCached(task.url))
+            bool cached = pagestore.isCached(task.url);
+              
+            if(cached)
             {
                 html = pagestore.fetch(task.url);
                 std::cout << "Write through DB" <<"\n";
@@ -122,35 +125,38 @@ void WebCrawler::crawl(const CrawlTask& seedTask)
             else
             {
                 html = fetcher.fetch(task.url);
-                Page page;
-                page.url = task.url;
-                page.html = html;
+            }  
 
+            Page page;
+            page.url = task.url;
+            page.html = html;
+
+            if(!cached)
+            {
                 pagestore.save(page); //if db has page it didn't store again
                 std::cout <<"write page" <<std::endl;
-
-            }  
-
-            if(task.depth >= maxDepth)
-            {
-                continue;
             }
-
-            URL handle_url(task.url);
-            DA<std::string> links = link_extractor(html);
-       
-            for(int i = 0;i < links.size();++i)
+            
+            if(task.depth < maxDepth)
             {
-                std::string resolved_url = handle_url.resolve_url(links[i]);
-                resolved_url = handle_url.normalize_url(resolved_url);
+                URL handle_url(task.url);
+                DA<std::string> links = link_extractor(html);
+       
+                for(int i = 0;i < links.size();++i)
+                {
+                    std::string resolved_url = handle_url.resolve_url(links[i]);
+                    resolved_url = handle_url.normalize_url(resolved_url);
 
-                if(visited.contains(resolved_url)){
-                    continue;
-                }
+                    if(visited.contains(resolved_url))
+                    {
+                        continue;
+                    }
 
-                frontier.push(CrawlTask(resolved_url, task.depth + 1));
-                visited.markVisited(resolved_url);
-            }  
+                    frontier.push(CrawlTask(resolved_url, task.depth + 1));
+                    visited.markVisited(resolved_url);
+                }  
+            }
+            processed_pages++;
         }
         catch(const std::exception &e)
         {

@@ -12,6 +12,7 @@
 class WebCrawler
 {   
     private:
+        int processed_pages;
         int maxDepth;
         int maxPages;
         Fetcher fetcher;

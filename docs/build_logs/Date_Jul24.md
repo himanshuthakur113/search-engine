@@ -82,3 +82,82 @@ after it I implement the inverted_index.h for which uses hashmap as a private me
 for two fxn of inverted_indexer  i need to make change in the hash_map 
 first i need to make the class member function contains const which is good thing so that it will not modify any class member ,then there is find function which return a V* but i need to overload it to return const V* for implementation of search and contains
 while adding const to hash_map i notice that it uses linkedlist find which also does not have const return so i need to add a overload to linkedlist too.
+
+after it i implemented the indexer.h and indexer.cpp where i added the entire workflow for the indexer
+It is like 
+Page
+
+↓
+
+HTMLParser
+
+↓
+
+Plain Text
+
+↓
+
+Tokenizer
+
+↓
+
+DA<string>
+
+↓
+
+Normalizer
+
+↓
+
+InvertedIndex
+
+↓
+
+HashMap
+
+↓
+
+PostingList
+
+↓
+
+Posting
+
+After it i make some changes in the crawler as in the crawler pagestore has function name pages_saved which is returning the number of pages saved in the buffer not in the actual database so I have decided to create another function which return the actual total number of pages saved and renamed this pages_saved to buffered_page()
+
+then i need to make some changes in the crawler crawl function added a processed page data member to Webcrawler class which will tell total number of pages processed 
+also refactor some crawler processing pipeline
+
+Frontier
+    │
+    ▼
+Pop URL
+    │
+    ▼
+Check Cache
+    │
+ ┌──┴────────┐
+ │           │
+ ▼           ▼
+SQLite    Network
+ │           │
+ └────┬──────┘
+      ▼
+ Build Page
+      │
+ ┌────┴─────┐
+ ▼          ▼
+Save      Extract Links
+(if new)
+      │
+      ▼
+Resolve URLs
+      │
+      ▼
+Visited Check
+      │
+      ▼
+Push to Frontier
+      │
+      ▼
+processed_pages++

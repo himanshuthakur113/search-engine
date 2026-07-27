@@ -11,6 +11,7 @@ class PageStore
     private:
         SQLiteDB db;
         int next_page_id;
+        int saved_pages;
         DA<Page> buffer;
         HashMap<std::string, int> buffered_urls;
 
@@ -18,6 +19,7 @@ class PageStore
         PageStore(const std::string &dir = "../data");
         void save(Page page);
         int pages_saved() const;
+        int buffered_pages() const;
         void flush();
         bool isCached(const std::string &url);
         std::string fetch(const std::string &url);
