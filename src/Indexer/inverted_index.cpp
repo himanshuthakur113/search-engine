@@ -1,4 +1,4 @@
-#include "inverted_indexer.h"
+#include "inverted_index.h"
 
 void InvertedIndex::add_word(const std::string& word,int page_Id)
 {
