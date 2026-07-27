@@ -76,4 +76,9 @@ for now it will just contain just the page_id
 
 the page_id it will use is from the database 
 
-next will be to implement a PostingList class the posting list class will have a dynamic array which will contain the 
+next will be to implement a PostingList class the posting list class will have a dynamic array which will contain the Posting structure which contain the page_id
+
+after it I implement the inverted_index.h for which uses hashmap as a private member 
+for two fxn of inverted_indexer  i need to make change in the hash_map 
+first i need to make the class member function contains const which is good thing so that it will not modify any class member ,then there is find function which return a V* but i need to overload it to return const V* for implementation of search and contains
+while adding const to hash_map i notice that it uses linkedlist find which also does not have const return so i need to add a overload to linkedlist too.
