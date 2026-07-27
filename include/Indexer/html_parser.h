@@ -5,6 +5,8 @@
 
 class HTMLParser
 {
+    private:
+        std::string decode_entity(const std::string& entity);
     public:
         std::string extract_text(const std::string& html);
 };

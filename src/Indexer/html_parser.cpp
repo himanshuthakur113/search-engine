@@ -9,6 +9,36 @@ enum class ParserState
     COMMENT
 };
 
+std::string HTMLParser::decode_entity(const std::string& entity)
+{
+    if(entity == "&amp;")
+    {
+        return "&";
+    }
+    if(entity == "&lt;")
+    {
+        return "<";
+    }
+    if(entity == "&gt;")
+    {
+        return ">";
+    }
+    if(entity == "&quot;")
+    {
+        return "\"";
+    }
+    if(entity == "&apos;")
+    {
+        return "'";
+    }
+    if(entity == "&nbsp;")
+    {
+        return " ";
+    }
+    return "";
+}
+
+
 std::string HTMLParser::extract_text(const std::string& html)
 {
     std::string text;
@@ -39,9 +69,48 @@ std::string HTMLParser::extract_text(const std::string& html)
             {
                 state = ParserState::TAG;
             }
-            else
+            else if(html[i] == '&')
             {
+                std::string entity;
+                int j = i;
+
+                while(j < html.size() && html[j] != ';')
+                {
+                    entity += html[j];
+                    j++;
+                }
+                if(j < html.size())
+                {
+                    entity += ';';
+                    std::string decoded = decode_entity(entity);
+                    if(!decoded.empty())
+                    {
+                        text += decoded;
+                        i = j;
+                    }
+                    else
+                    {
+                        text += '&';
+                    }
+                }
+                else
+                {
+                    text += '&';
+                }
+            } 
+            else
+            {   
+                if(std::isspace(html[i]))
+                {
+                    if(!text.empty() && text.back() != ' ')
+                    {
+                        text += ' ';
+                    }
+                }
+                else
+                {
                 text += html[i];
+                }
             }
 
             break;
@@ -51,7 +120,11 @@ std::string HTMLParser::extract_text(const std::string& html)
             if (html[i] == '>')
             {
                 state = ParserState::TEXT;
-                text += ' ';
+                
+                if(!text.empty() && text.back() != ' ')
+                {
+                    text += ' ';
+                }
             }
 
             break;
