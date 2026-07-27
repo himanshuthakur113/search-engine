@@ -170,3 +170,37 @@ void SQLiteDB::rollbackTransaction()
     if(errMsg) sqlite3_free(errMsg);
 }
 
+
+DA<Page> SQLiteDB::get_all_pages()
+{
+    const char* sql = "SELECT id, url, html FROM pages;";
+    sqlite3_stmt* stmt = nullptr;
+
+    int res = sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr);
+    if(res != SQLITE_OK)
+    {
+        throw std::runtime_error("Cannot create get_all_pages command");
+    }
+
+    DA<Page> pages;
+
+    while((res = sqlite3_step(stmt)) == SQLITE_ROW)
+    {
+        Page page;
+
+        page.id = sqlite3_column_int(stmt, 0);
+        page.url = (const char*)(sqlite3_column_text(stmt, 1));
+        page.html =(const char*)(sqlite3_column_text(stmt, 2));
+        pages.append(page);
+    }
+
+    if(res != SQLITE_DONE)
+    {
+        sqlite3_finalize(stmt);
+        throw std::runtime_error("Error while reading pages");
+    }
+
+    sqlite3_finalize(stmt);
+
+    return pages;
+}

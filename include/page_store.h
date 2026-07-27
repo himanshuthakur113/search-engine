@@ -23,6 +23,7 @@ class PageStore
         void flush();
         bool isCached(const std::string &url);
         std::string fetch(const std::string &url);
+        DA<Page> get_all_pages();
 
 };
 

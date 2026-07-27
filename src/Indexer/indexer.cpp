@@ -15,3 +15,12 @@ void Indexer::index_page(const Page& page)
         }
     }
 }
+
+void Indexer::build(PageStore& store)
+{
+    DA<Page> pages = store.get_all_pages();
+    for(int i = 0;i < pages.size(); ++i)
+    {
+        index_page(pages[i]);
+    }
+}

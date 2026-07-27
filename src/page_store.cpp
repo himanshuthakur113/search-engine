@@ -72,3 +72,9 @@ int PageStore::buffered_pages() const
 {
     return buffer.size();
 }
+
+DA<Page> PageStore::get_all_pages()
+{   
+    flush();
+    return db.get_all_pages();
+}

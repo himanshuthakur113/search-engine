@@ -6,6 +6,7 @@
 #include "normalizer.h"
 #include "inverted_index.h"
 #include "page.h"
+#include "page_store.h"
 
 class Indexer
 {
@@ -18,6 +19,7 @@ private:
 public:
     void index_page(const Page& page);
     const InvertedIndex& get_index() const;
+    void build(PageStore& store);
 };
 
 #endif

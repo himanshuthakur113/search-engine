@@ -4,6 +4,7 @@
 #include <sqlite3.h>
 #include <string>
 #include "page.h"
+#include "dynamic_array.h"
 
 class SQLiteDB
 {
@@ -20,6 +21,7 @@ class SQLiteDB
         void beginTransaction();
         void commitTransaction();
         void rollbackTransaction();
+        DA<Page> get_all_pages();
 };
 
 #endif
