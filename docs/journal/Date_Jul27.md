@@ -1,74 +1,101 @@
-First I write the indexer.cpp in which i implement the get_all_pages function in the Page store i am going to use the page store for getting the pages to store inside the indexer by implementing a get_all_pages function that rely on the sqlite_db file which return a array of pages
+# Design Journal
 
-Then i use this get_all_pages function in the indexer.cpp to impement the build function which call the index page function in for all pages store in the array 
+---
 
-index function simply take the html from the page call the parser extract_text function and then call the tokenizer to convert it into tokens 
-then in a loop it will normalize all the tokens and save it inside the inverted index by calling the add_word function of inverted index 
- 
-the inverted index add_word function work by calling the get function of the hashmap the get function of the hashmap return a reference of the value of the key-value pair 
-there is also a thing if there is not key it inserted a new key and return a reference to value 
-in the hashmap the keyvalue pair is the keyword and the postinglist 
-the posting list have array of posting struct which contain page_id and have a add funtion which add a posting to the array we call index.get(word).add_posting(page_Id); inside the add_word function of the inverted_index
+# Section 1 — Specific Bug
 
-there also one more thing what I will see it in the future that if i call the build function of the indexer again it can push duplicate value in the hashmap do not know does it actually going to happen or not as hashmap duplicate inserting just overwrite the old value
+## Linker Error
 
-after it implement the get_index function in the indexer.h since inverted_index is part of the indexer class and is private we can'nt acces it directly so we return a const reference to it so that we can access it function 
+### Compiler Output
 
-now testing it in main i faces another linker error 
-![linker error](image-27.png)
-fix it,the issue is i need to add Indexer/ to #include "xxx.h" like #include "Indexer/xxx.h"
-in the src files
+```text
+undefined reference to ...
+```
 
-I got a result that index is build but as I check it did n't have the key i suppose which can be incorrect inside it 
-think of writing a function which show the entire hashmap of inverted indexer
+![parser diagram](images/image-27.png)
 
-added a show function in hash map which display the key only not the value as the value postinglist does not have any show function write now 
+### Cause
 
-add the show function to the inverted index and call the show function inside it 
+After implementing the complete indexer pipeline, the project failed during linking. The issue was that source files inside `src/Indexer/` were including headers using:
 
-after running the program i get result like this 
-![inverted_index look](image-25.png)
+```cpp
+#include "indexer.h"
+```
 
-I then make more improvement in the show function making it to take a parameter int n so that it shows only the top 10 elements of the hashmap
-this is the second result
-![inverted_index look first 10](image-26.png)
+instead of
 
-then i creted another design proposal according to new function of the project 
-![crawler diagram](images/image.png)
-And now working on the html parser solving past problem
-right now my html can do 
-remove html tag
-igonre script contents
-ignore style contents
-ignore html comments
-insert a space after tags to avoid merging words
+```cpp
+#include "Indexer/indexer.h"
+```
 
+After correcting the include paths, the project compiled and linked successfully.
 
-now the things left to do are 
-whitespace normalization there can be lot of space between words like GCD       Kangra
-or can be indentation \n \t
+---
 
-now I am going to remove entity these entity are like &gt which is inside the <p> &gt hello </p> the browser convert it into < hello we don't want these so we for only parse we convert them to its meaning 
+# Section 2 — Failed Attempt
 
-okay i notice a bug in my craw function of crawler.cpp that is 
-call crawl() again with the same seed URL, your crawler currently does:
+After implementing the indexer pipeline, I expected that if `build()` completed successfully, then my inverted index must also be correct.
 
-frontier.push(seedTask);
-visited.markVisited(seedTask.url);
+However, I had no way to verify whether words were actually being inserted into my custom `HashMap`. Running the program only showed that the index was built, not what was inside it.
 
-without checking whether the seed is already visited.
+To solve this, I first implemented a `show()` function inside the `HashMap` that prints all stored keys. Then I exposed another `show()` function through `InvertedIndex` so I could inspect the indexed words directly. Later I improved the function by adding a parameter `show(int n)` so only the first *n* entries are displayed, making debugging much easier.
 
-A better implementation is:
+---
 
-if (!visited.contains(seedTask.url))
-{
-    frontier.push(seedTask);
-    visited.markVisited(seedTask.url);
-}
+# Section 3 — Memory Diagram
 
-This avoids reprocessing the seed URL within the same crawler instance.
+## HTML Parser Diagram
 
-okay I am adding a new helper function name as match_tag inside the html_parser it is going to handle the case senstivity issue in tag the tag can be lowercase uppercase mixcase like <script> <SrciPT> <SCRIPT> html allow all these 
+**Image:** `parser_diagram.png`
 
-after that i added a logic for trailing whitespaces which comes after my content 
+![parser diagram](images/image.png)
 
+The diagram illustrates:
+
+- Reading HTML character by character
+- Removing HTML tags
+- Ignoring `<script>` contents
+- Ignoring `<style>` contents
+- Ignoring HTML comments
+- Inserting spaces after tags
+- Normalizing whitespace
+- Decoding HTML entities
+- Removing trailing whitespace
+- Producing clean plain text for the tokenizer
+
+---
+
+# Section 4 — Code Reference
+
+| Commit Hash | File |
+|--------------|------|
+| `676e609` | `src/page_store.cpp` |
+| `a5890cd` | `src/Indexer/indexer.cpp` |
+| `cf6b349` | `src/Indexer/inverted_index.cpp` |
+| `11e9642` | `src/Indexer/posting_list.cpp` |
+| `2de94b0` | `src/Indexer/tokenizer.cpp` |
+| `6843ca7` | `src/Indexer/html_parser.cpp` |
+| `ab478db` | `src/Indexer/html_parser.cpp` |
+| `7edb220` | `src/Indexer/html_parser.cpp` |
+| `089871c` | `src/crawler.cpp` |
+| `ac02b2b` | `src/Indexer/html_parser.cpp` |
+
+---
+
+# Section 5 — Learning Reflection
+
+Today I completed almost the entire indexing pipeline. Earlier I thought the indexer would simply read pages and store words inside a data structure, but while implementing it I realized every stage depends on the previous one.
+
+I first implemented `PageStore::get_all_pages()` so the indexer could load every page from the SQLite database. Then inside `build()`, every page is passed to `index_page()`, where the HTML is converted into plain text using the HTML parser, tokenized into individual words, normalized, and finally inserted into the inverted index.
+
+One thing I found interesting was using my own `HashMap`. Since `HashMap::get()` returns a reference to the value, I could directly write:
+
+```cpp
+index.get(word).add_posting(page_id);
+```
+
+without checking whether the word already exists. If the key is missing, the `HashMap` creates a new posting list automatically and returns its reference.
+
+While testing, I also realized that just because the program builds successfully does not mean the data inside it is correct. I had no way to see what was stored inside the inverted index, so I added `show()` functions to both the `HashMap` and the `InvertedIndex`. That made debugging much easier because I could actually verify the indexed words instead of assuming everything was working correctly.
+
+Another thing I noticed is that if I call `Indexer::build()` multiple times, duplicate postings might be inserted. I haven't solved that yet, but I have noted it as something to investigate later. This reminded me that designing software is not only about making it work once, but also about thinking about repeated execution and future improvements.

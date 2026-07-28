@@ -104,7 +104,7 @@ public:
 
 ## HTMLParser
 
-![HTML Parser Memory Diagram](/Project_2/Crawler_HT/docs/design/memory_diagram/htmlparser.jpeg)
+![HTML Parser Memory Diagram](/Project_2/Crawler_HT/docs/design/memory_diagram/htmlparserv2.jpeg)
 
 ---
 
