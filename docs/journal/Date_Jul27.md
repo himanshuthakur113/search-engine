@@ -15,7 +15,7 @@ there also one more thing what I will see it in the future that if i call the bu
 after it implement the get_index function in the indexer.h since inverted_index is part of the indexer class and is private we can'nt acces it directly so we return a const reference to it so that we can access it function 
 
 now testing it in main i faces another linker error 
-![linker error](image.png)
+![linker error](image-27.png)
 fix it,the issue is i need to add Indexer/ to #include "xxx.h" like #include "Indexer/xxx.h"
 in the src files
 
@@ -27,8 +27,48 @@ added a show function in hash map which display the key only not the value as th
 add the show function to the inverted index and call the show function inside it 
 
 after running the program i get result like this 
-![inverted_index look](image-1.png)
+![inverted_index look](image-25.png)
 
 I then make more improvement in the show function making it to take a parameter int n so that it shows only the top 10 elements of the hashmap
 this is the second result
-![inverted_index look first 10](image-2.png)
+![inverted_index look first 10](image-26.png)
+
+then i creted another design proposal according to new function of the project 
+![crawler diagram](images/image.png)
+And now working on the html parser solving past problem
+right now my html can do 
+remove html tag
+igonre script contents
+ignore style contents
+ignore html comments
+insert a space after tags to avoid merging words
+
+
+now the things left to do are 
+whitespace normalization there can be lot of space between words like GCD       Kangra
+or can be indentation \n \t
+
+now I am going to remove entity these entity are like &gt which is inside the <p> &gt hello </p> the browser convert it into < hello we don't want these so we for only parse we convert them to its meaning 
+
+okay i notice a bug in my craw function of crawler.cpp that is 
+call crawl() again with the same seed URL, your crawler currently does:
+
+frontier.push(seedTask);
+visited.markVisited(seedTask.url);
+
+without checking whether the seed is already visited.
+
+A better implementation is:
+
+if (!visited.contains(seedTask.url))
+{
+    frontier.push(seedTask);
+    visited.markVisited(seedTask.url);
+}
+
+This avoids reprocessing the seed URL within the same crawler instance.
+
+okay I am adding a new helper function name as match_tag inside the html_parser it is going to handle the case senstivity issue in tag the tag can be lowercase uppercase mixcase like <script> <SrciPT> <SCRIPT> html allow all these 
+
+after that i added a logic for trailing whitespaces which comes after my content 
+

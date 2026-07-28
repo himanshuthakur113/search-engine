@@ -9,6 +9,31 @@ enum class ParserState
     COMMENT
 };
 
+bool HTMLParser::match_tag(const std::string &html,int index,const std::string& tag)
+{   
+    if(index + tag.size() > html.size())
+    {
+        return false;
+    }
+
+    for(int i = 0;i < tag.length();++i)
+    {
+        if(std::tolower(html[index + i]) != tag[i])
+        {
+            return false;
+        }
+    }
+    
+    //at the end of string they match
+    if(index + tag.size() == html.size())
+    {
+        return true;
+    }
+    
+    char next = html[index + tag.size()];
+    return next == '>'|| std::isspace(next);
+}
+
 std::string HTMLParser::decode_entity(const std::string& entity)
 {
     if(entity == "&amp;")
@@ -55,12 +80,12 @@ std::string HTMLParser::extract_text(const std::string& html)
                 state = ParserState::COMMENT;
                 i += 3;
             }
-            else if (html.compare(i, 7, "<script") == 0)
+            else if (match_tag(html, i, "<script"))
             {
                 state = ParserState::SCRIPT;
                 i += 6;
             }
-            else if (html.compare(i, 6, "<style") == 0)
+            else if (match_tag(html, i, "<style"))
             {
                 state = ParserState::STYLE;
                 i += 5;
@@ -131,7 +156,7 @@ std::string HTMLParser::extract_text(const std::string& html)
 
         case ParserState::SCRIPT:
 
-            if (html.compare(i, 9, "</script>") == 0)
+            if (match_tag(html,i,"</script>"))
             {
                 state = ParserState::TEXT;
                 i += 8;
@@ -141,7 +166,7 @@ std::string HTMLParser::extract_text(const std::string& html)
 
         case ParserState::STYLE:
 
-            if (html.compare(i, 8, "</style>") == 0)
+            if (match_tag(html, i, "</style>"))
             {
                 state = ParserState::TEXT;
                 i += 7;
@@ -160,6 +185,9 @@ std::string HTMLParser::extract_text(const std::string& html)
             break;
         }
     }
-
+    while(!text.empty() && text.back() == ' ')
+    {
+    text.pop_back();
+    }
     return text;
 }
