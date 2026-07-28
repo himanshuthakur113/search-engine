@@ -14,14 +14,20 @@ class SQLiteDB
     public:
         SQLiteDB(const std::string& filename);
         ~SQLiteDB();
+
+        void initialize_page_table();
+        void initialize_index_table();
+
         void insert(const Page& page);
         std::string fetch(const std::string& url);
         Page get(int id);
         bool exists(const std::string &url);
+        DA<Page> get_all_pages();
+
         void beginTransaction();
         void commitTransaction();
         void rollbackTransaction();
-        DA<Page> get_all_pages();
-};
 
+        
+};
 #endif

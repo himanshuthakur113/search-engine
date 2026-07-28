@@ -2,11 +2,11 @@
 #include "sqlite3.h"
 #include <stdexcept>
 
-PageStore::PageStore(const std::string &dir):
-    db(dir + "/pages.db"),
-    next_page_id(0),
-    saved_pages(0)
-   {}
+PageStore::PageStore(const std::string& filename)
+    : db(filename)
+{
+    db.initialize_page_table();
+}
 
 
 void PageStore::save(Page page)

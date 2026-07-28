@@ -9,22 +9,6 @@ SQLiteDB::SQLiteDB(const std::string& filename)
     {
         throw std::runtime_error("Databases not connected");
     }
-    
-    const char* createTable = "CREATE TABLE IF NOT EXISTS pages ("
-                                "id INTEGER PRIMARY KEY,"
-                                "url TEXT UNIQUE NOT NULL,"
-                                "html TEXT NOT NULL"
-                                ");";
-    
-    char* errMsg = nullptr;
-    res = sqlite3_exec(db,createTable,nullptr,nullptr,&errMsg);
-    if(res != SQLITE_OK)
-    {
-        std::string error = errMsg;
-        sqlite3_free(errMsg);
-        throw std::runtime_error(error);
-    }
-
     std::cout << "database initialized" <<"\n";
 }
 
@@ -33,6 +17,42 @@ SQLiteDB::~SQLiteDB()
     if(db != nullptr)
     {
         sqlite3_close(db);
+    }
+}
+
+void SQLiteDB::initialize_page_table()
+{
+    const char* createTable = "CREATE TABLE IF NOT EXISTS pages ("
+                                "id INTEGER PRIMARY KEY,"
+                                "url TEXT UNIQUE NOT NULL,"
+                                "html TEXT NOT NULL"
+                                ");";
+    
+    char* errMsg = nullptr;
+    int res = sqlite3_exec(db,createTable,nullptr,nullptr,&errMsg);
+    if(res != SQLITE_OK)
+    {
+        std::string error = errMsg;
+        sqlite3_free(errMsg);
+        throw std::runtime_error(error);
+    }
+}
+
+void SQLiteDB::initialize_index_table()
+{
+    const char* createTable =  "CREATE TABLE IF NOT EXISTS inverted_index ("
+                                "term TEXT NOT NULL,"
+                                "page_id INTEGER NOT NULL,"
+                                "PRIMARY KEY(term, page_id)"
+                                ");";
+    
+    char* errMsg = nullptr;
+    int res = sqlite3_exec(db,createTable,nullptr,nullptr,&errMsg);
+    if(res != SQLITE_OK)
+    {
+        std::string error = errMsg;
+        sqlite3_free(errMsg);
+        throw std::runtime_error(error);
     }
 }
 
