@@ -85,3 +85,13 @@ fixing by replacing the match tag fxn for </script> and </style> by html.compare
 here it passes all the test cases 
 ![alt text](image-36.png)
 
+now testing tokenizer failed one test case that is the alphanumeric
+![alt text](image-37.png)
+ok the problem is that my tokenizer only take alphanumeric character as token not like any symbols 
+
+changing the test case as I only want the toknzier to return word not word with symbols 
+after it all the test cases pass
+![alt text](image-38.png)
+
+next i test normalizer and it passes all test cases
+![alt text](image-39.png)
