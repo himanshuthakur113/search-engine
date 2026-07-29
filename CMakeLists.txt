@@ -73,7 +73,16 @@ add_executable(test_runner
     #test/test_extractlinks.cpp
     #test/test_frontier.cpp
     #test/test_visitedSet.cpp
-    test/test_crawler.cpp
+    #test/test_crawler.cpp
+
+    # Indexer Tests
+    test/test_html_parser.cpp
+    #test/test_tokenizer.cpp
+    #test/test_normalizer.cpp
+    #test/test_posting_list.cpp
+    #test/test_inverted_index.cpp
+    #test/test_index_store.cpp
+    #test/test_indexer.cpp
 
     src/fetcher.cpp
     src/crawler.cpp
@@ -83,6 +92,15 @@ add_executable(test_runner
     src/visited_set.cpp
     src/crawl_task.cpp
     src/sqlite_db.cpp
+
+    # Indexer Sources
+    src/Indexer/indexer.cpp
+    src/Indexer/html_parser.cpp
+    src/Indexer/tokenizer.cpp
+    src/Indexer/normalizer.cpp
+    src/Indexer/inverted_index.cpp
+    src/Indexer/posting_list.cpp
+    src/Indexer/index_store.cpp
 )
 
 target_include_directories(test_runner PRIVATE

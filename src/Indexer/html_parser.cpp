@@ -156,7 +156,7 @@ std::string HTMLParser::extract_text(const std::string& html)
 
         case ParserState::SCRIPT:
 
-            if (match_tag(html,i,"</script>"))
+            if (html.compare(i,9,"</script>") == 0)
             {
                 state = ParserState::TEXT;
                 i += 8;
@@ -166,7 +166,7 @@ std::string HTMLParser::extract_text(const std::string& html)
 
         case ParserState::STYLE:
 
-            if (match_tag(html, i, "</style>"))
+            if (html.compare(i,8,"</style>") == 0)
             {
                 state = ParserState::TEXT;
                 i += 7;

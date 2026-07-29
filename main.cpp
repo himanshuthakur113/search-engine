@@ -1,48 +1,49 @@
-#include "fetcher.h"
+#include <iostream>
+#include <cstdio>
+
 #include "crawler.h"
 #include "crawl_task.h"
-#include <iostream>
-#include "page.h"
-#include "sqlite_db.h"
-#include "include/Indexer/indexer.h"
-#include "Indexer/inverted_index.h"
-using namespace std;
+#include "page_store.h"
+#include "Indexer/indexer.h"
 
 int main()
-{   
-
-    /*Page p;
-    p.id = 1;
-    p.url = "www.sag.com";
-    p.html = "<html?fa";
-
-    SQLiteDB db("../pages.db");
-    db.insert(p);
-    
-    string url = "https://www.facebook.com/";
-    CrawlTask seedTask(url,0);
-    
-    WebCrawler crawler(0,100000); 
-
-    crawler.crawl(seedTask);    */
-    PageStore s;
-
-    Indexer i;
-    i.build(s);
-    cout << "index build" <<"\n";
-    
-    InvertedIndex x = i.get_index();
-
-} 
-
-
-/*int main()
 {
-    InvertedIndex test;
 
-    test.add_word("hello", 1);
-    test.add_word("world", 1);
-    test.add_word("hello", 2);
 
-    test.show(10);
-}*/
+    std::cout << "==============================\n";
+    std::cout << "   Web Crawler Test\n";
+    std::cout << "==============================\n";
+
+    std::string seed = "https://quotes.toscrape.com/";
+    CrawlTask task(seed, 0);
+
+    WebCrawler crawler(2, 50);   // depth = 2, max pages = 50
+
+    std::cout << "\n[1] Crawling...\n";
+    crawler.crawl(task);
+
+    std::cout << "\nCrawling completed.\n";
+
+    std::cout << "\n==============================\n";
+    std::cout << "   Indexer Test\n";
+    std::cout << "==============================\n";
+
+    PageStore store;
+    Indexer indexer;
+
+    std::cout << "\n[2] Building Inverted Index...\n";
+    indexer.build(store);
+
+    std::cout << "Index built successfully.\n";
+
+    std::cout << "\n[3] Sample Keywords\n";
+    std::cout << "------------------------------\n";
+
+    indexer.get_index().show(20);
+
+    std::cout << "\n==============================\n";
+    std::cout << "Pipeline completed successfully.\n";
+    std::cout << "==============================\n";
+
+    return 0;
+}
