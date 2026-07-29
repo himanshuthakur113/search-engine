@@ -6,11 +6,32 @@ Normalizer::Normalizer()
     load_stopwords();
 }
 
+
+bool Normalizer::has_alpha(const std::string& word)
+{
+    std::string token = word;
+    for(auto &i:token)
+    {
+        if(std::isalpha(i))
+        {
+            return true;
+        }
+    }
+    return false;
+}
 std::string Normalizer::normalize(const std::string& word)
 {   
     std::string token = to_lowercase(word);
     token = trim_punctuation(token);
     if(token.empty())
+    {
+        return "";
+    }
+    if(token.length() < 2)
+    {
+        return "";
+    }
+    if(!has_alpha(token))
     {
         return "";
     }

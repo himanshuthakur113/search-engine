@@ -33,7 +33,6 @@ int main()
     
     InvertedIndex x = i.get_index();
 
-    x.show(10);
 } 
 
 

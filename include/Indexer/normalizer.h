@@ -15,6 +15,7 @@ class Normalizer
         std::string to_lowercase(const std::string& word);
         std::string trim_punctuation(const std::string& word);
         bool is_stopWord(const std::string& word);
+        bool has_alpha(const std::string& word);
 };      
 
 #endif
