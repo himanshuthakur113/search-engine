@@ -6,7 +6,8 @@ SQLiteDB::SQLiteDB(const std::string& filename)
 {
     int res = sqlite3_open(filename.c_str(), &db);
     if(res!= SQLITE_OK)
-    {
+    {   
+        sqlite3_close(db);
         throw std::runtime_error("Databases not connected");
     }
     std::cout << "database initialized" <<"\n";
@@ -41,9 +42,9 @@ void SQLiteDB::initialize_page_table()
 void SQLiteDB::initialize_index_table()
 {
     const char* createTable =  "CREATE TABLE IF NOT EXISTS inverted_index ("
-                                "term TEXT NOT NULL,"
+                                "keyword TEXT NOT NULL,"
                                 "page_id INTEGER NOT NULL,"
-                                "PRIMARY KEY(term, page_id)"
+                                "PRIMARY KEY(keyword, page_id)"
                                 ");";
     
     char* errMsg = nullptr;
@@ -190,7 +191,6 @@ void SQLiteDB::rollbackTransaction()
     if(errMsg) sqlite3_free(errMsg);
 }
 
-
 DA<Page> SQLiteDB::get_all_pages()
 {
     const char* sql = "SELECT id, url, html FROM pages;";
@@ -223,4 +223,43 @@ DA<Page> SQLiteDB::get_all_pages()
     sqlite3_finalize(stmt);
 
     return pages;
+}
+
+void SQLiteDB::insert_index(const std::string& keyword,int page_id)
+{
+    const char* sql = "INSERT INTO inverted_index(keyword,page_id) VALUES(?,?);";
+    
+    sqlite3_stmt* stmt = nullptr;
+
+    int res = sqlite3_prepare_v2(db,sql,-1,&stmt,nullptr);
+    if(res != SQLITE_OK)
+    {
+        throw std::runtime_error("Can not create prepared statement");
+    }
+
+    sqlite3_bind_text(stmt,1,keyword.c_str(),-1,SQLITE_TRANSIENT);
+    sqlite3_bind_int(stmt,2,page_id);
+
+    res = sqlite3_step(stmt);
+    if(res != SQLITE_DONE)
+    {   
+        sqlite3_finalize(stmt);
+        throw std::runtime_error("Cannot insert value ");
+    }
+    sqlite3_finalize(stmt);
+}
+
+void SQLiteDB::clear_index_table()
+{
+    char* errMsg = nullptr;
+    int res = sqlite3_exec(db,"DELETE FROM inverted_index;", nullptr, nullptr, &errMsg);
+    if(res!= SQLITE_OK)
+    {
+        std::string error = errMsg ? errMsg : "Failed to clear index table";
+        if(errMsg)
+        {
+            sqlite3_free(errMsg);
+            throw std::runtime_error(error);
+        }
+    }
 }
