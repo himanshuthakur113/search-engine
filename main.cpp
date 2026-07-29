@@ -7,6 +7,7 @@
 #include "include/Indexer/indexer.h"
 #include "Indexer/inverted_index.h"
 using namespace std;
+
 int main()
 {   
 
@@ -16,15 +17,15 @@ int main()
     p.html = "<html?fa";
 
     SQLiteDB db("../pages.db");
-    db.insert(p);*/
+    db.insert(p);
     
     string url = "https://www.facebook.com/";
     CrawlTask seedTask(url,0);
     
-    WebCrawler crawler(0,100000);
+    WebCrawler crawler(0,100000); 
 
-    crawler.crawl(seedTask);    
-    /*PageStore s;
+    crawler.crawl(seedTask);    */
+    PageStore s;
 
     Indexer i;
     i.build(s);
@@ -32,5 +33,17 @@ int main()
     
     InvertedIndex x = i.get_index();
 
-    x.show(10);*/
-}
+    x.show(10);
+} 
+
+
+/*int main()
+{
+    InvertedIndex test;
+
+    test.add_word("hello", 1);
+    test.add_word("world", 1);
+    test.add_word("hello", 2);
+
+    test.show(10);
+}*/

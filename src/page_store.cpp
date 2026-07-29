@@ -2,8 +2,8 @@
 #include "sqlite3.h"
 #include <stdexcept>
 
-PageStore::PageStore(const std::string& filename)
-    : db(filename)
+PageStore::PageStore(const std::string& dir)
+    : db(dir + "/pages.db")
 {
     db.initialize_page_table();
 }

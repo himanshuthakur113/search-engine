@@ -1,4 +1,5 @@
 #include "Indexer/inverted_index.h"
+#include "dynamic_array.h"
 
 void InvertedIndex::add_word(const std::string& word,int page_Id)
 {
@@ -18,4 +19,10 @@ const PostingList* InvertedIndex::search(const std::string& word) const
 void InvertedIndex::show(int n) const
 {
     index.show(n);
+}
+
+DA<std::string> InvertedIndex::giveKey() const
+{
+    DA<std::string> keywords = index.keys();
+    return keywords;
 }

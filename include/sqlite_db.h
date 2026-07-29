@@ -28,6 +28,7 @@ class SQLiteDB
         void commitTransaction();
         void rollbackTransaction();
 
-        
+        void insert_index(const std::string& keyword,int page_id);
+        void clear_index_table();
 };
 #endif

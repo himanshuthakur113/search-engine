@@ -46,6 +46,7 @@ add_executable(main
     src/Indexer/normalizer.cpp
     src/Indexer/inverted_index.cpp
     src/Indexer/posting_list.cpp
+    src/Indexer/index_store.cpp
 )
 
 target_include_directories(main PRIVATE

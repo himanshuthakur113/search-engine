@@ -16,7 +16,7 @@ class PageStore
         HashMap<std::string, int> buffered_urls;
 
     public:
-        PageStore(const std::string &dir = "../data");
+        PageStore(const std::string& dir ="../data");
         void save(Page page);
         int pages_saved() const;
         int buffered_pages() const;

@@ -1,5 +1,6 @@
 #include "Indexer/indexer.h"
 #include "dynamic_array.h"
+#include <iostream>
 
 void Indexer::index_page(const Page& page)
 {
@@ -23,6 +24,7 @@ void Indexer::build(PageStore& store)
     {
         index_page(pages[i]);
     }
+    i_store.save(index);
 }
 
 const InvertedIndex& Indexer::get_index() const
