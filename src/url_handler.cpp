@@ -185,7 +185,7 @@ std::string URL::normalize_url(const std::string &url)
     //this is for .. and . segments 
     std::string dotdotpath = temp.path;
     std::string path_part;
-    std::string path_parts[100];
+    DA<std::string> path_parts;
     int top = -1;
     for(int i = 0;i < dotdotpath.size(); ++i)
     {
