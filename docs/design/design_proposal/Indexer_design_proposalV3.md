@@ -677,5 +677,3 @@ Potential enhancements include:
 * Support for advanced stemming and lemmatization algorithms.
 
 ---
-
-This proposal reflects the modular architecture of your current indexer implementation, documenting each component's responsibilities, interactions, and design rationale while remaining aligned with the existing crawler infrastructure.
