@@ -3,7 +3,7 @@
 #include <stdexcept>
 
 PageStore::PageStore(const std::string& dir)
-    : db(dir + "/pages.db")
+    : db(dir + "/pages.db"), next_page_id(0), saved_pages(0)
 {
     db.initialize_page_table();
 }

@@ -7,7 +7,7 @@
 
 WebCrawler::WebCrawler()
 {
-    maxDepth = 0;
+    maxDepth = 3;
     maxPages = 0;
     processed_pages = 0;
 }
