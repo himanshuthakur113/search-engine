@@ -1,9 +1,19 @@
 #include "sqlite_db.h"
 #include <iostream>
 #include <stdexcept>
+#include <filesystem>
 
 SQLiteDB::SQLiteDB(const std::string& filename)
 {
+    // Create the parent folder (e.g. "../data") if it does not exist yet,
+    // so a fresh clone can run without any manual setup.
+    std::filesystem::path file_path(filename);
+    if(file_path.has_parent_path())
+    {
+        std::error_code ec;
+        std::filesystem::create_directories(file_path.parent_path(), ec);
+    }
+
     int res = sqlite3_open(filename.c_str(), &db);
     if(res!= SQLITE_OK)
     {   
