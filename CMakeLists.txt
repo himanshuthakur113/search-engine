@@ -19,10 +19,17 @@ find_package(GTest REQUIRED)
 # Data Structures Library
 # ----------------------------------------------------
 
-add_subdirectory(
-    ../../Project_1/data_structures-library
-    data_structures_build
+include(FetchContent)
+
+FetchContent_Declare(
+    dslib
+    GIT_REPOSITORY https://github.com/himanshuthakur113/data_structures-library.git
+    GIT_TAG        v0.1.0
 )
+
+# To use a local copy of the library instead of downloading it, configure with:
+#   cmake -S . -B build -DFETCHCONTENT_SOURCE_DIR_DSLIB=/path/to/data_structures-library
+FetchContent_MakeAvailable(dslib)
 
 # ----------------------------------------------------
 # Main Executable
@@ -65,22 +72,22 @@ target_link_libraries(main PRIVATE
 # ----------------------------------------------------
 
 add_executable(test_runner
-    #test/test_url_resolver.cpp
-    #test/test_url_normalizer.cpp
-    #test/test_sqlite_db.cpp
-    #test/test_pageStore.cpp
-    #test/test_fetcher.cpp
-    #test/test_extractlinks.cpp
-    #test/test_frontier.cpp
-    #test/test_visitedSet.cpp
-    #test/test_crawler.cpp
+    test/test_url_resolver.cpp
+    test/test_url_normalizer.cpp
+    test/test_sqlite_db.cpp
+    test/test_pageStore.cpp
+    test/test_fetcher.cpp
+    test/test_extractlinks.cpp
+    test/test_frontier.cpp
+    test/test_visitedSet.cpp
+    test/test_crawler.cpp
 
     # Indexer Tests
-    #test/test_html_parser.cpp
-    #test/test_tokenizer.cpp
-    #test/test_normalizer.cpp
-    #test/test_posting_list.cpp
-    #test/test_inverted_index.cpp
+    test/test_html_parser.cpp
+    test/test_tokenizer.cpp
+    test/test_normalizer.cpp
+    test/test_posting_list.cpp
+    test/test_inverted_index.cpp
 
 
     src/fetcher.cpp
