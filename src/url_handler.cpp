@@ -198,7 +198,8 @@ std::string URL::normalize_url(const std::string &url)
             else if(path_part != "." && path_part != "")
             {   
                 top += 1;
-                path_parts[top] = path_part;
+                if(top < path_parts.size()) path_parts[top] = path_part;
+                else path_parts.append(path_part);
                 path_part = "";
             }
             else
@@ -222,7 +223,8 @@ std::string URL::normalize_url(const std::string &url)
     else if(path_part != "." && path_part != "")
     {
         top++;
-        path_parts[top] = path_part;
+        if(top < path_parts.size()) path_parts[top] = path_part;
+        else path_parts.append(path_part);
         path_part = "";
     }
 
