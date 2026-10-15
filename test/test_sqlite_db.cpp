@@ -33,6 +33,7 @@ TEST_F(SQLiteDBTest, DatabaseCreation)
 TEST_F(SQLiteDBTest, ExistsReturnsFalseInitially)
 {
     SQLiteDB db(db_name);
+    db.initialize_page_table();
 
     EXPECT_FALSE(db.exists("https://example.com"));
 }
@@ -40,6 +41,7 @@ TEST_F(SQLiteDBTest, ExistsReturnsFalseInitially)
 TEST_F(SQLiteDBTest, ExistsReturnsTrueAfterInsert)
 {
     SQLiteDB db(db_name);
+    db.initialize_page_table();
 
     Page page;
     page.url = "https://example.com";
@@ -55,6 +57,7 @@ TEST_F(SQLiteDBTest, ExistsReturnsTrueAfterInsert)
 TEST_F(SQLiteDBTest, InsertSinglePage)
 {
     SQLiteDB db(db_name);
+    db.initialize_page_table();
 
     Page page;
     page.url = "https://example.com";
@@ -66,6 +69,7 @@ TEST_F(SQLiteDBTest, InsertSinglePage)
 TEST_F(SQLiteDBTest, InsertMultiplePages)
 {
     SQLiteDB db(db_name);
+    db.initialize_page_table();
 
     Page p1;
     p1.url = "https://a.com";
@@ -91,6 +95,7 @@ TEST_F(SQLiteDBTest, InsertMultiplePages)
 TEST_F(SQLiteDBTest, DuplicateURLThrowsException)
 {
     SQLiteDB db(db_name);
+    db.initialize_page_table();
 
     Page page;
     page.url = "https://example.com";
@@ -109,6 +114,7 @@ TEST_F(SQLiteDBTest, DuplicateURLThrowsException)
 TEST_F(SQLiteDBTest, FetchHTML)
 {
     SQLiteDB db(db_name);
+    db.initialize_page_table();
 
     Page page;
     page.url = "https://example.com";
@@ -125,6 +131,7 @@ TEST_F(SQLiteDBTest, FetchHTML)
 TEST_F(SQLiteDBTest, FetchUnknownURLThrows)
 {
     SQLiteDB db(db_name);
+    db.initialize_page_table();
 
     EXPECT_THROW(
         db.fetch("https://unknown.com"),
@@ -137,6 +144,7 @@ TEST_F(SQLiteDBTest, FetchUnknownURLThrows)
 TEST_F(SQLiteDBTest, GetStoredPage)
 {
     SQLiteDB db(db_name);
+    db.initialize_page_table();
 
     Page page;
     page.url = "https://example.com";
@@ -154,6 +162,7 @@ TEST_F(SQLiteDBTest, GetStoredPage)
 TEST_F(SQLiteDBTest, GetInvalidIDThrows)
 {
     SQLiteDB db(db_name);
+    db.initialize_page_table();
 
     EXPECT_THROW(
         db.get(10),
@@ -166,6 +175,7 @@ TEST_F(SQLiteDBTest, GetInvalidIDThrows)
 TEST_F(SQLiteDBTest, InsertEmptyHTML)
 {
     SQLiteDB db(db_name);
+    db.initialize_page_table();
 
     Page page;
     page.url = "https://example.com";
@@ -182,6 +192,7 @@ TEST_F(SQLiteDBTest, InsertEmptyHTML)
 TEST_F(SQLiteDBTest, InsertLargeHTML)
 {
     SQLiteDB db(db_name);
+    db.initialize_page_table();
 
     Page page;
     page.url = "https://large.com";
@@ -198,6 +209,7 @@ TEST_F(SQLiteDBTest, InsertLargeHTML)
 TEST_F(SQLiteDBTest, MultipleFetches)
 {
     SQLiteDB db(db_name);
+    db.initialize_page_table();
 
     Page p1;
     p1.url = "https://a.com";
@@ -217,6 +229,7 @@ TEST_F(SQLiteDBTest, MultipleFetches)
 TEST_F(SQLiteDBTest, GetMultiplePages)
 {
     SQLiteDB db(db_name);
+    db.initialize_page_table();
 
     Page p1;
     p1.url = "https://a.com";

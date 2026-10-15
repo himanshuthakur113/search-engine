@@ -26,9 +26,10 @@ TEST(FetcherTest, ReturnedContentContainsHTML)
 {
     Fetcher fetcher;
 
-    std::string html = fetcher.fetch("https://www.google.com");
+    std::string html = fetcher.fetch("https://example.com");
 
-    EXPECT_NE(html.find("<html>"), std::string::npos);
+    // match "<html" so tags with attributes (e.g. <html lang="en">) also count
+    EXPECT_NE(html.find("<html"), std::string::npos);
 }
 
 //test for invalid url

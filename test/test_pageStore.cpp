@@ -30,6 +30,13 @@ TEST_F(PageStoreTest, SaveOnePage)
 
     store.save(page);
 
+    // save() only buffers the page; it is written to the database on flush()
+    EXPECT_EQ(store.buffered_pages(), 1);
+    EXPECT_EQ(store.pages_saved(), 0);
+
+    store.flush();
+
+    EXPECT_EQ(store.buffered_pages(), 0);
     EXPECT_EQ(store.pages_saved(), 1);
 }
 
@@ -74,11 +81,12 @@ TEST_F(PageStoreTest, FlushClearsBuffer)
 
     store.save(page);
 
-    EXPECT_EQ(store.pages_saved(), 1);
+    EXPECT_EQ(store.buffered_pages(), 1);
 
     store.flush();
 
-    EXPECT_EQ(store.pages_saved(), 0);
+    EXPECT_EQ(store.buffered_pages(), 0);
+    EXPECT_EQ(store.pages_saved(), 1);
 }
 
 TEST_F(PageStoreTest, DuplicatePageIgnored)
@@ -94,5 +102,7 @@ TEST_F(PageStoreTest, DuplicatePageIgnored)
 
     store.save(page);
 
-    EXPECT_EQ(store.pages_saved(), 0);
+    // the second save is ignored: nothing new is buffered or written
+    EXPECT_EQ(store.buffered_pages(), 0);
+    EXPECT_EQ(store.pages_saved(), 1);
 }
