@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include <filesystem>
+#include <sqlite3.h>
 
 #include "Indexer/index_store.h"
 #include "Indexer/inverted_index.h"
@@ -168,4 +169,53 @@ TEST_F(IndexStoreTest, SaveReplacesPreviousIndex)
 
     EXPECT_FALSE(loaded.contains("old"));
     EXPECT_TRUE(loaded.contains("new"));
+}
+
+// --------------------------------------------------
+// Word counts
+// --------------------------------------------------
+
+TEST_F(IndexStoreTest, WordCountsAreSavedAndLoaded)
+{
+    InvertedIndex index;
+    index.add_word("life", 1, 5);
+    index.add_word("life", 2, 2);
+
+    IndexStore store(dir);
+    store.save(index);
+
+    InvertedIndex loaded = store.load();
+
+    ASSERT_TRUE(loaded.contains("life"));
+    EXPECT_EQ(loaded.search("life")->count_for(1), 5);
+    EXPECT_EQ(loaded.search("life")->count_for(2), 2);
+}
+
+// An index.db written by an older version has no "count" column.
+TEST_F(IndexStoreTest, OldIndexTableWithoutCountIsReplaced)
+{
+    std::filesystem::create_directories(dir);
+
+    sqlite3* raw = nullptr;
+    ASSERT_EQ(sqlite3_open((dir + "/index.db").c_str(), &raw), SQLITE_OK);
+    ASSERT_EQ(sqlite3_exec(raw,
+        "CREATE TABLE inverted_index (keyword TEXT NOT NULL, page_id INTEGER NOT NULL,"
+        " PRIMARY KEY(keyword, page_id));"
+        "INSERT INTO inverted_index VALUES('old', 1);",
+        nullptr, nullptr, nullptr), SQLITE_OK);
+    sqlite3_close(raw);
+
+    IndexStore store(dir);
+
+    // the outdated table is dropped, so there is nothing to load yet ...
+    EXPECT_EQ(store.load().giveKey().size(), 0);
+
+    // ... and the new index can be saved and loaded normally
+    InvertedIndex index;
+    index.add_word("fresh", 3, 4);
+    store.save(index);
+
+    InvertedIndex loaded = store.load();
+    ASSERT_TRUE(loaded.contains("fresh"));
+    EXPECT_EQ(loaded.search("fresh")->count_for(3), 4);
 }

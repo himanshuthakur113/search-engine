@@ -21,7 +21,7 @@ void IndexStore::save(const InvertedIndex& index)
         {
             for(int j = 0;j < postings.size();++j)
             {   
-                db.insert_index(keywords[i],postings[j].page_id);
+                db.insert_index(keywords[i],postings[j].page_id,postings[j].count);
             }
         db.commitTransaction();
         }
@@ -39,7 +39,7 @@ InvertedIndex IndexStore::load()
     DA<IndexRow> rows = db.get_all_index_rows();
     for(int i = 0;i < rows.size();++i)
     {
-        index.add_word(rows[i].keyword, rows[i].page_id);
+        index.add_word(rows[i].keyword, rows[i].page_id, rows[i].count);
     }
     return index;
 }

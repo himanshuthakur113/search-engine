@@ -51,18 +51,51 @@ void SQLiteDB::initialize_page_table()
 
 void SQLiteDB::initialize_index_table()
 {
+    // Older versions of the index table had no "count" column. The index is
+    // derived data (run ./main again to rebuild it from the stored pages),
+    // so an outdated table is simply dropped and recreated.
+    bool table_exists = false;
+    bool has_count = false;
+
+    sqlite3_stmt* info = nullptr;
+    if(sqlite3_prepare_v2(db,"PRAGMA table_info(inverted_index);",-1,&info,nullptr) == SQLITE_OK)
+    {
+        while(sqlite3_step(info) == SQLITE_ROW)
+        {
+            table_exists = true;
+            std::string column = (const char*)sqlite3_column_text(info, 1);
+            if(column == "count")
+            {
+                has_count = true;
+            }
+        }
+    }
+    sqlite3_finalize(info);
+
+    char* errMsg = nullptr;
+    if(table_exists && !has_count)
+    {
+        int dropped = sqlite3_exec(db,"DROP TABLE inverted_index;",nullptr,nullptr,&errMsg);
+        if(dropped != SQLITE_OK)
+        {
+            std::string error = errMsg ? errMsg : "Failed to drop old index table";
+            if(errMsg) sqlite3_free(errMsg);
+            throw std::runtime_error(error);
+        }
+    }
+
     const char* createTable =  "CREATE TABLE IF NOT EXISTS inverted_index ("
                                 "keyword TEXT NOT NULL,"
                                 "page_id INTEGER NOT NULL,"
+                                "count INTEGER NOT NULL,"
                                 "PRIMARY KEY(keyword, page_id)"
                                 ");";
-    
-    char* errMsg = nullptr;
+
     int res = sqlite3_exec(db,createTable,nullptr,nullptr,&errMsg);
     if(res != SQLITE_OK)
     {
-        std::string error = errMsg;
-        sqlite3_free(errMsg);
+        std::string error = errMsg ? errMsg : "Failed to create index table";
+        if(errMsg) sqlite3_free(errMsg);
         throw std::runtime_error(error);
     }
 }
@@ -235,9 +268,9 @@ DA<Page> SQLiteDB::get_all_pages()
     return pages;
 }
 
-void SQLiteDB::insert_index(const std::string& keyword,int page_id)
+void SQLiteDB::insert_index(const std::string& keyword,int page_id,int count)
 {
-    const char* sql = "INSERT INTO inverted_index(keyword,page_id) VALUES(?,?);";
+    const char* sql = "INSERT INTO inverted_index(keyword,page_id,count) VALUES(?,?,?);";
     
     sqlite3_stmt* stmt = nullptr;
 
@@ -249,6 +282,7 @@ void SQLiteDB::insert_index(const std::string& keyword,int page_id)
 
     sqlite3_bind_text(stmt,1,keyword.c_str(),-1,SQLITE_TRANSIENT);
     sqlite3_bind_int(stmt,2,page_id);
+    sqlite3_bind_int(stmt,3,count);
 
     res = sqlite3_step(stmt);
     if(res != SQLITE_DONE)
@@ -301,7 +335,7 @@ std::string SQLiteDB::get_url(int id)
 
 DA<IndexRow> SQLiteDB::get_all_index_rows()
 {
-    const char* sql = "SELECT keyword, page_id FROM inverted_index ORDER BY keyword, page_id;";
+    const char* sql = "SELECT keyword, page_id, count FROM inverted_index ORDER BY keyword, page_id;";
     sqlite3_stmt* stmt = nullptr;
 
     int res = sqlite3_prepare_v2(db,sql,-1,&stmt,nullptr);
@@ -316,6 +350,7 @@ DA<IndexRow> SQLiteDB::get_all_index_rows()
         IndexRow row;
         row.keyword = (const char*)sqlite3_column_text(stmt, 0);
         row.page_id = sqlite3_column_int(stmt, 1);
+        row.count = sqlite3_column_int(stmt, 2);
         rows.append(row);
     }
     sqlite3_finalize(stmt);

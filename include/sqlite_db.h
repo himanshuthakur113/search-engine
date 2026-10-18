@@ -10,6 +10,7 @@ struct IndexRow
 {
     std::string keyword;
     int page_id;
+    int count;
 };
 
 class SQLiteDB
@@ -35,7 +36,7 @@ class SQLiteDB
         void commitTransaction();
         void rollbackTransaction();
 
-        void insert_index(const std::string& keyword,int page_id);
+        void insert_index(const std::string& keyword,int page_id,int count);
         void clear_index_table();
         DA<IndexRow> get_all_index_rows();
 };
