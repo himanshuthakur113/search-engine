@@ -55,6 +55,9 @@ add_library(engine_core STATIC
     src/Indexer/inverted_index.cpp
     src/Indexer/posting_list.cpp
     src/Indexer/index_store.cpp
+
+    # Search
+    src/Search/search_engine.cpp
 )
 
 target_include_directories(engine_core PUBLIC
@@ -98,6 +101,9 @@ add_executable(test_runner
     test/test_posting_list.cpp
     test/test_inverted_index.cpp
     test/test_index_store.cpp
+
+    # Search Tests
+    test/test_search_engine.cpp
 )
 
 target_link_libraries(test_runner PRIVATE
