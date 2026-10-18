@@ -1,12 +1,12 @@
-# Search Engine from Scratch: Crawler and Indexer
+# Search Engine from Scratch
 
-A C++20 web crawler and indexer built on my own [data structures library](https://github.com/himanshuthakur113/data_structures-library). The crawler downloads pages, stores them in SQLite, and the indexer builds an **inverted index** (word -> pages containing it) that a search engine can query.
+A C++20 search engine built on my own [data structures library](https://github.com/himanshuthakur113/data_structures-library). The crawler downloads pages and stores them in SQLite, the indexer builds an **inverted index** (word -> pages containing it), and the search program answers queries from that index.
 
-This is **Stage 2** of the project:
+This is **Stage 2 and 3** of the project:
 
 ```
-Data Structures Library  ->  Crawler + Indexer  ->  Search Engine
-        (done)                  (this repo)            (next)
+Data Structures Library  ->  Crawler + Indexer  ->  Search
+        (done)                  (done)             (in progress)
 ```
 
 ## How it works
@@ -49,6 +49,15 @@ Frontier (queue) --> Fetcher (libcurl) --> link extractor
 | `InvertedIndex` | `HashMap<word, PostingList>` |
 | `IndexStore` | Saves the index to SQLite |
 
+### Search
+
+| Component | What it does |
+|---|---|
+| `IndexStore::load()` | Reads the saved index back from SQLite into an `InvertedIndex` |
+| `SearchEngine` | Turns a query into terms with the same tokenizer and normalizer the indexer used, then returns the pages that contain **all** the terms |
+
+Results are currently listed in the order the pages were crawled. Ranking is the next step.
+
 ## Build
 
 Requirements: C++20 compiler, CMake 3.15+, libcurl, SQLite3, GoogleTest.
@@ -82,6 +91,22 @@ cd build
 
 By default `main.cpp` crawls `https://quotes.toscrape.com/` (a site made for crawler practice) to depth 2 with at most 50 pages, builds the index, and prints sample keywords. Change the seed, depth and page limit in `main.cpp`.
 
+Then search the index you just built:
+
+```bash
+./search            # reads ../data/pages.db and ../data/index.db
+```
+
+```
+search> albert einstein
+20 page(s) found:
+  1. https://quotes.toscrape.com/
+  2. https://quotes.toscrape.com/author/Albert-Einstein
+  ...
+```
+
+Type `exit` to quit. A page is a match only if it contains every word of the query. Capitalization and punctuation are ignored, and very common words such as "the" are skipped.
+
 Please be polite when crawling real sites: keep the page limit small and respect each site's `robots.txt`.
 
 ## Tests
@@ -108,4 +133,5 @@ docs/build_logs/       build logs
 
 - [x] Crawler (frontier, visited set, URL normalization, page store)
 - [x] Indexer (HTML parser, tokenizer, normalizer, inverted index, SQLite storage)
-- [ ] Search engine: query the index and rank results
+- [x] Search: find pages that contain all the words of a query
+- [ ] Ranking: order results by relevance (word frequency)
