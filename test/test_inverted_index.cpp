@@ -108,3 +108,33 @@ TEST_F(InvertedIndexTest, LargeIndex)
         EXPECT_TRUE(index.contains("word" + std::to_string(i)));
     }
 }
+
+// --------------------------------------------------
+// Word counts
+// --------------------------------------------------
+
+TEST(InvertedIndexCountTest, RepeatedWordOnSamePageIsCounted)
+{
+    InvertedIndex index;
+
+    index.add_word("crawler", 1);
+    index.add_word("crawler", 1);
+    index.add_word("crawler", 1);
+    index.add_word("crawler", 2);
+
+    const PostingList* postingList = index.search("crawler");
+    ASSERT_NE(postingList, nullptr);
+
+    EXPECT_EQ(postingList->getPostings().size(), 2);
+    EXPECT_EQ(postingList->count_for(1), 3);
+    EXPECT_EQ(postingList->count_for(2), 1);
+}
+
+TEST(InvertedIndexCountTest, CountCanBeGivenExplicitly)
+{
+    InvertedIndex index;
+
+    index.add_word("search", 5, 4);
+
+    EXPECT_EQ(index.search("search")->count_for(5), 4);
+}

@@ -83,3 +83,50 @@ TEST_F(PostingListTest, LargeNumberOfPostings)
         EXPECT_TRUE(postingList.contains(i));
     }
 }
+
+// --------------------------------------------------
+// Word counts
+// --------------------------------------------------
+
+TEST_F(PostingListTest, NewPostingStartsWithCountOne)
+{
+    postingList.add_posting(3);
+
+    EXPECT_EQ(postingList.getPostings()[0].count, 1);
+    EXPECT_EQ(postingList.count_for(3), 1);
+}
+
+TEST_F(PostingListTest, AddingSamePageAgainIncreasesCount)
+{
+    postingList.add_posting(7);
+    postingList.add_posting(7);
+    postingList.add_posting(7);
+
+    ASSERT_EQ(postingList.getPostings().size(), 1);
+    EXPECT_EQ(postingList.count_for(7), 3);
+}
+
+TEST_F(PostingListTest, CountCanBeGivenExplicitly)
+{
+    postingList.add_posting(4, 5);
+    postingList.add_posting(4, 2);
+
+    EXPECT_EQ(postingList.count_for(4), 7);
+}
+
+TEST_F(PostingListTest, CountsAreKeptPerPage)
+{
+    postingList.add_posting(1);
+    postingList.add_posting(2);
+    postingList.add_posting(2);
+
+    EXPECT_EQ(postingList.count_for(1), 1);
+    EXPECT_EQ(postingList.count_for(2), 2);
+}
+
+TEST_F(PostingListTest, CountForMissingPageIsZero)
+{
+    postingList.add_posting(1);
+
+    EXPECT_EQ(postingList.count_for(99), 0);
+}

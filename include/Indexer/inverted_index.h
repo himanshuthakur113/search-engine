@@ -13,7 +13,7 @@ class InvertedIndex
 
     public:
         void show(int n) const;
-        void add_word(const std::string& word,int page_Id);
+        void add_word(const std::string& word,int page_Id,int count = 1);
         bool contains(const std::string& word) const;
         const PostingList* search(const std::string& word) const;
         DA<std::string> giveKey() const;
