@@ -79,6 +79,10 @@ target_link_libraries(engine_core PUBLIC
 add_executable(main main.cpp)
 target_link_libraries(main PRIVATE engine_core)
 
+# search the index
+add_executable(search search_main.cpp)
+target_link_libraries(search PRIVATE engine_core)
+
 # ----------------------------------------------------
 # Test Executable
 # ----------------------------------------------------
