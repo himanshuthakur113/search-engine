@@ -106,3 +106,25 @@ TEST_F(PageStoreTest, DuplicatePageIgnored)
     EXPECT_EQ(store.buffered_pages(), 0);
     EXPECT_EQ(store.pages_saved(), 1);
 }
+
+TEST_F(PageStoreTest, UrlOfReturnsUrlOfStoredPage)
+{
+    PageStore store(dir);
+
+    Page page;
+    page.url = "https://example.com/a";
+    page.html = "<html>A</html>";
+
+    store.save(page);
+    store.flush();
+
+    // SQLite numbers the first stored page 1
+    EXPECT_EQ(store.url_of(1), "https://example.com/a");
+}
+
+TEST_F(PageStoreTest, UrlOfUnknownIdThrows)
+{
+    PageStore store(dir);
+
+    EXPECT_THROW(store.url_of(999), std::runtime_error);
+}

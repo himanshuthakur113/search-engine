@@ -97,6 +97,7 @@ add_executable(test_runner
     test/test_normalizer.cpp
     test/test_posting_list.cpp
     test/test_inverted_index.cpp
+    test/test_index_store.cpp
 )
 
 target_link_libraries(test_runner PRIVATE

@@ -32,3 +32,14 @@ void IndexStore::save(const InvertedIndex& index)
         }
     }
 }
+
+InvertedIndex IndexStore::load()
+{
+    InvertedIndex index;
+    DA<IndexRow> rows = db.get_all_index_rows();
+    for(int i = 0;i < rows.size();++i)
+    {
+        index.add_word(rows[i].keyword, rows[i].page_id);
+    }
+    return index;
+}

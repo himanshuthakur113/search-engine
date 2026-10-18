@@ -11,6 +11,7 @@ class IndexStore
     public:
         IndexStore(const std::string& dir = "../data");
         void save(const InvertedIndex& index) ;
+        InvertedIndex load();
 };
 
 #endif

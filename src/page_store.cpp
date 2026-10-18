@@ -37,6 +37,11 @@ std::string PageStore::fetch(const std::string &url)
     return db.fetch(url);
 }
 
+std::string PageStore::url_of(int page_id)
+{
+    return db.get_url(page_id);
+}
+
 void PageStore::flush()
 {
     if(buffer.size() == 0)

@@ -6,6 +6,12 @@
 #include "page.h"
 #include "dynamic_array.h"
 
+struct IndexRow
+{
+    std::string keyword;
+    int page_id;
+};
+
 class SQLiteDB
 {
     private:
@@ -21,6 +27,7 @@ class SQLiteDB
         void insert(const Page& page);
         std::string fetch(const std::string& url);
         Page get(int id);
+        std::string get_url(int id);
         bool exists(const std::string &url);
         DA<Page> get_all_pages();
 
@@ -30,5 +37,6 @@ class SQLiteDB
 
         void insert_index(const std::string& keyword,int page_id);
         void clear_index_table();
+        DA<IndexRow> get_all_index_rows();
 };
 #endif

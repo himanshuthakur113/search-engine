@@ -273,3 +273,51 @@ void SQLiteDB::clear_index_table()
         }
     }
 }
+
+std::string SQLiteDB::get_url(int id)
+{
+    const char* sql = "SELECT url FROM pages WHERE id = ?;";
+    sqlite3_stmt* stmt = nullptr;
+
+    int res = sqlite3_prepare_v2(db,sql,-1,&stmt,nullptr);
+    if(res != SQLITE_OK)
+    {
+        throw std::runtime_error("Cannot create get_url command object");
+    }
+
+    sqlite3_bind_int(stmt,1,id);
+    res = sqlite3_step(stmt);
+
+    if(res != SQLITE_ROW)
+    {
+        sqlite3_finalize(stmt);
+        throw std::runtime_error("Page not found");
+    }
+
+    std::string url = (const char*)sqlite3_column_text(stmt, 0);
+    sqlite3_finalize(stmt);
+    return url;
+}
+
+DA<IndexRow> SQLiteDB::get_all_index_rows()
+{
+    const char* sql = "SELECT keyword, page_id FROM inverted_index ORDER BY keyword, page_id;";
+    sqlite3_stmt* stmt = nullptr;
+
+    int res = sqlite3_prepare_v2(db,sql,-1,&stmt,nullptr);
+    if(res != SQLITE_OK)
+    {
+        throw std::runtime_error("Cannot create index select command object");
+    }
+
+    DA<IndexRow> rows;
+    while(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+        IndexRow row;
+        row.keyword = (const char*)sqlite3_column_text(stmt, 0);
+        row.page_id = sqlite3_column_int(stmt, 1);
+        rows.append(row);
+    }
+    sqlite3_finalize(stmt);
+    return rows;
+}
