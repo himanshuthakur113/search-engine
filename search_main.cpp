@@ -1,9 +1,13 @@
 #include <iostream>
+#include <iomanip>
 #include <string>
 
 #include "page_store.h"
 #include "Indexer/index_store.h"
 #include "Search/search_engine.h"
+
+// How many of the best results are shown for each query
+const int MAX_RESULTS_SHOWN = 10;
 
 // Usage: ./search [data_dir]      (default data_dir: ../data)
 // Run ./main first, so that pages.db and index.db exist.
@@ -20,8 +24,8 @@ int main(int argc, char* argv[])
         int keywords = index.giveKey().size();
         if(keywords == 0)
         {
-            std::cerr << "The index in '" << dir << "' is empty.\n"
-                      << "Run ./main first to crawl pages and build the index.\n";
+            std::cerr << "The index in '" << dir << "' is empty (or was made by an older version).\n"
+                      << "Run ./main to crawl pages and build the index.\n";
             return 1;
         }
 
@@ -57,10 +61,24 @@ int main(int argc, char* argv[])
                 continue;
             }
 
-            std::cout << results.size() << " page(s) found:\n";
-            for(int i = 0;i < results.size(); ++i)
+            int shown = results.size();
+            if(shown > MAX_RESULTS_SHOWN)
             {
-                std::cout << "  " << (i + 1) << ". " << results[i].url << "\n";
+                shown = MAX_RESULTS_SHOWN;
+            }
+
+            std::cout << results.size() << " page(s) found";
+            if(shown < results.size())
+            {
+                std::cout << ", showing the best " << shown;
+            }
+            std::cout << ":\n";
+
+            for(int i = 0;i < shown; ++i)
+            {
+                std::cout << "  " << std::setw(2) << (i + 1) << ". "
+                          << std::fixed << std::setprecision(2) << std::setw(6)
+                          << results[i].score << "  " << results[i].url << "\n";
             }
         }
     }
