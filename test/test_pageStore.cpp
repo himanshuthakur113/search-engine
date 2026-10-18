@@ -128,3 +128,22 @@ TEST_F(PageStoreTest, UrlOfUnknownIdThrows)
 
     EXPECT_THROW(store.url_of(999), std::runtime_error);
 }
+
+TEST_F(PageStoreTest, TotalPagesCountsStoredPages)
+{
+    PageStore store(dir);
+    EXPECT_EQ(store.total_pages(), 0);
+
+    Page a;
+    a.url = "https://example.com/a";
+    a.html = "<html>A</html>";
+    Page b;
+    b.url = "https://example.com/b";
+    b.html = "<html>B</html>";
+
+    store.save(a);
+    store.save(b);
+    store.flush();
+
+    EXPECT_EQ(store.total_pages(), 2);
+}

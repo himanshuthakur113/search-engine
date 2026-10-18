@@ -356,3 +356,23 @@ DA<IndexRow> SQLiteDB::get_all_index_rows()
     sqlite3_finalize(stmt);
     return rows;
 }
+
+int SQLiteDB::count_pages()
+{
+    const char* sql = "SELECT COUNT(*) FROM pages;";
+    sqlite3_stmt* stmt = nullptr;
+
+    int res = sqlite3_prepare_v2(db,sql,-1,&stmt,nullptr);
+    if(res != SQLITE_OK)
+    {
+        throw std::runtime_error("Cannot create count command object");
+    }
+
+    int total = 0;
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+        total = sqlite3_column_int(stmt, 0);
+    }
+    sqlite3_finalize(stmt);
+    return total;
+}

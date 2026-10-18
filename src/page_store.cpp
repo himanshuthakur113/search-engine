@@ -37,6 +37,11 @@ std::string PageStore::fetch(const std::string &url)
     return db.fetch(url);
 }
 
+int PageStore::total_pages()
+{
+    return db.count_pages();
+}
+
 std::string PageStore::url_of(int page_id)
 {
     return db.get_url(page_id);

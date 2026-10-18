@@ -29,6 +29,7 @@ class SQLiteDB
         std::string fetch(const std::string& url);
         Page get(int id);
         std::string get_url(int id);
+        int count_pages();
         bool exists(const std::string &url);
         DA<Page> get_all_pages();
 

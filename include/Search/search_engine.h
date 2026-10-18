@@ -12,6 +12,7 @@ struct SearchResult
 {
     int page_id;
     std::string url;
+    double score;
 };
 
 // Answers queries using an InvertedIndex.
@@ -35,7 +36,14 @@ class SearchEngine
         // IDs of the pages that contain every term of the query
         DA<int> match(const std::string& query);
 
-        // Same as match(), but with the URL of each page
+        // Same pages as match(), with their URLs and a relevance score,
+        // best match first (equal scores: lower page id first).
+        //
+        // Score = sum over the query terms of  count * idf
+        //   count = how many times the term appears on the page
+        //   idf   = ln(1 + total_pages / pages_containing_term)
+        // so a word that is rare across all pages counts for more than a
+        // word (like a menu item) that appears on almost every page.
         DA<SearchResult> search(const std::string& query);
 };
 
