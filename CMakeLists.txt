@@ -32,12 +32,12 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(dslib)
 
 # ----------------------------------------------------
-# Main Executable
+# Core library
+# (everything except the executables' main() files and the tests,
+#  so main, search and test_runner share one list of sources)
 # ----------------------------------------------------
 
-add_executable(main
-    main.cpp
-
+add_library(engine_core STATIC
     src/fetcher.cpp
     src/crawler.cpp
     src/url_handler.cpp
@@ -47,6 +47,7 @@ add_executable(main
     src/crawl_task.cpp
     src/sqlite_db.cpp
 
+    # Indexer
     src/Indexer/indexer.cpp
     src/Indexer/html_parser.cpp
     src/Indexer/tokenizer.cpp
@@ -56,16 +57,24 @@ add_executable(main
     src/Indexer/index_store.cpp
 )
 
-target_include_directories(main PRIVATE
-    ${CMAKE_SOURCE_DIR}/include
-    ${CMAKE_SOURCE_DIR}/src
+target_include_directories(engine_core PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-target_link_libraries(main PRIVATE
+target_link_libraries(engine_core PUBLIC
     CURL::libcurl
     SQLite::SQLite3
     DataStructuresLibrary
 )
+
+# ----------------------------------------------------
+# Executables
+# ----------------------------------------------------
+
+# crawl pages and build the index
+add_executable(main main.cpp)
+target_link_libraries(main PRIVATE engine_core)
 
 # ----------------------------------------------------
 # Test Executable
@@ -88,39 +97,12 @@ add_executable(test_runner
     test/test_normalizer.cpp
     test/test_posting_list.cpp
     test/test_inverted_index.cpp
-
-
-    src/fetcher.cpp
-    src/crawler.cpp
-    src/url_handler.cpp
-    src/frontier.cpp
-    src/page_store.cpp
-    src/visited_set.cpp
-    src/crawl_task.cpp
-    src/sqlite_db.cpp
-
-    # Indexer Sources
-    src/Indexer/indexer.cpp
-    src/Indexer/html_parser.cpp
-    src/Indexer/tokenizer.cpp
-    src/Indexer/normalizer.cpp
-    src/Indexer/inverted_index.cpp
-    src/Indexer/posting_list.cpp
-    src/Indexer/index_store.cpp
-)
-
-target_include_directories(test_runner PRIVATE
-    ${CMAKE_SOURCE_DIR}/include
-    ${CMAKE_SOURCE_DIR}/src
 )
 
 target_link_libraries(test_runner PRIVATE
+    engine_core
     GTest::gtest
     GTest::gtest_main
-
-    CURL::libcurl
-    SQLite::SQLite3
-    DataStructuresLibrary
 )
 
 # ----------------------------------------------------
