@@ -45,7 +45,7 @@ Frontier (queue) --> Fetcher (libcurl) --> link extractor
 | `HTMLParser` | Strips tags, ignores `<script>` and `<style>`, decodes entities |
 | `Tokenizer` | Splits text into words |
 | `Normalizer` | Lowercases, trims punctuation, removes stopwords, short words and pure numbers |
-| `PostingList` | The IDs of the pages one word appears in, without duplicates |
+| `PostingList` | The pages one word appears in, with how many times it appears on each |
 | `InvertedIndex` | `HashMap<word, PostingList>` |
 | `IndexStore` | Saves the index to SQLite |
 
@@ -53,10 +53,22 @@ Frontier (queue) --> Fetcher (libcurl) --> link extractor
 
 | Component | What it does |
 |---|---|
-| `IndexStore::load()` | Reads the saved index back from SQLite into an `InvertedIndex` |
+| `IndexStore::load()` | Reads the saved index (with word counts) back from SQLite into an `InvertedIndex` |
 | `SearchEngine` | Turns a query into terms with the same tokenizer and normalizer the indexer used, then returns the pages that contain **all** the terms |
 
-Results are currently listed in the order the pages were crawled. Ranking is the next step.
+### Ranking
+
+Each result gets a **TF-IDF** score, and results are listed best first:
+
+```
+score = sum over the query words of   count x idf
+count = how many times the word appears on the page
+idf   = ln(1 + total_pages / pages_containing_the_word)
+```
+
+A page that mentions a word often scores higher, and a word that is rare across the whole site counts for more than one that appears on almost every page (such as a menu or sidebar item). Equal scores are ordered by page id. The index stores the count for every word on every page.
+
+If you have an `index.db` made by an older version (without counts), run `./main` again; the outdated table is replaced automatically.
 
 ## Build
 
@@ -99,13 +111,14 @@ Then search the index you just built:
 
 ```
 search> albert einstein
-20 page(s) found:
-  1. https://quotes.toscrape.com/
-  2. https://quotes.toscrape.com/author/Albert-Einstein
-  ...
+20 page(s) found, showing the best 10:
+   1.  18.79  https://quotes.toscrape.com/author/Albert-Einstein
+   2.   7.52  https://quotes.toscrape.com/
+   3.   6.26  https://www.goodreads.com/quotes
+   ...
 ```
 
-Type `exit` to quit. A page is a match only if it contains every word of the query. Capitalization and punctuation are ignored, and very common words such as "the" are skipped.
+Type `exit` to quit. A page is a match only if it contains every word of the query, and matches are ranked by relevance. Capitalization and punctuation are ignored, and very common words such as "the" are skipped. The best 10 results are shown.
 
 Please be polite when crawling real sites: keep the page limit small and respect each site's `robots.txt`.
 
@@ -134,4 +147,7 @@ docs/build_logs/       build logs
 - [x] Crawler (frontier, visited set, URL normalization, page store)
 - [x] Indexer (HTML parser, tokenizer, normalizer, inverted index, SQLite storage)
 - [x] Search: find pages that contain all the words of a query
-- [ ] Ranking: order results by relevance (word frequency)
+- [x] Ranking: order results by TF-IDF relevance
+- [ ] Better ranking: normalize for page length, boost matches in titles
+- [ ] Phrase search and result snippets
+- [ ] Skip repeated page boilerplate (menus, sidebars) when indexing
