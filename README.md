@@ -141,13 +141,3 @@ docs/design/           design proposals and memory diagrams
 docs/journal/          daily journals
 docs/build_logs/       build logs
 ```
-
-## Roadmap
-
-- [x] Crawler (frontier, visited set, URL normalization, page store)
-- [x] Indexer (HTML parser, tokenizer, normalizer, inverted index, SQLite storage)
-- [x] Search: find pages that contain all the words of a query
-- [x] Ranking: order results by TF-IDF relevance
-- [ ] Better ranking: normalize for page length, boost matches in titles
-- [ ] Phrase search and result snippets
-- [ ] Skip repeated page boilerplate (menus, sidebars) when indexing

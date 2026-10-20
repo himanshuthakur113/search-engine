@@ -14,7 +14,7 @@ int main()
     std::cout << "   Web Crawler Test\n";
     std::cout << "==============================\n";
 
-    std::string seed = "https://quotes.toscrape.com/";
+    std::string seed = "https://gcdharamshala.in/";
     CrawlTask task(seed, 0);
 
     WebCrawler crawler(2, 50);   // depth = 2, max pages = 50
